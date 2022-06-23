@@ -1,0 +1,21 @@
+linters:
+  enable:
+    - gofmt
+    - govet
+    - gocyclo
+    - ineffassign
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - wastedassign
+    - revive
+run:
+  go: '1.17'
+  skip-dirs:
+    - res
+    - mocks
+    - store/shared/migrate/internal
+    - store/shared/migrate/internal
+issues:
+  fix: true
