@@ -7,14 +7,6 @@ run: # Run
 	go generate ./... && go run main.go
 .PHONY: run
 
-build: # Build
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o bootstrap main.go && zip bootstrap.zip bootstrap
-.PHONY: build
-
-dist: # Creates and build dist folder
-	goreleaser release --rm-dist --snapshot
-.PHONY: dist
-
 format: # Run gofmt
 	go fmt ./...
 .PHONY: format
