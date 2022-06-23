@@ -6,9 +6,9 @@ package logger
 
 import (
 	"github.com/ainsleyclark/errors"
-	"github.com/go-chi/chi/v5"
-	"github.com/krang-backlink/api/delivery/api/shared/httptest"
+	"github.com/stretchr/testify/assert"
 	"net/http"
+	"net/http/httptest"
 )
 
 func (t *LoggerTestSuite) TestHandler() {
@@ -46,15 +46,23 @@ func (t *LoggerTestSuite) TestHandler() {
 
 	for name, test := range tt {
 		t.Run(name, func() {
-			s := httptest.New(t.T())
 			buf := t.Setup()
-			r := chi.NewRouter()
-			r.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+
+			handler := func(w http.ResponseWriter, r *http.Request) {
 				test.input.Request = r
 				w.WriteHeader(test.input.Status)
 				Fire(test.input)
-			})
-			s.RequestAndServe(http.MethodGet, "/test", nil, r)
+			}
+
+			ts := httptest.NewServer(http.Handler(http.HandlerFunc(handler)))
+			defer ts.Close()
+
+			req, err := http.NewRequest(http.MethodGet, ts.URL+"/test", nil)
+			assert.NoErrorf(t.T(), err, "error making new request")
+
+			_, err = http.DefaultClient.Do(req)
+			assert.NoErrorf(t.T(), err, "error performing request")
+
 			t.Contains(buf.String(), test.want)
 		})
 	}

@@ -9,23 +9,16 @@ import (
 )
 
 type (
-	// Options defines the configuration needed for creating
+	// Config defines the configuration needed for creating
 	// a new Logger.
-	Options struct {
-		// Prefix is the string written to the log before any
-		// message.
-		Prefix string
-		// DefaultStatus is the status code for HTTP requests
-		// when none is set.
-		DefaultStatus string
-	}
 	Config struct {
+		version         string
 		prefix          string
 		defaultStatus   string
 		service         string
 		mongoClient     *mongo.Client
 		workplaceToken  string
-		workplaceThread string
+		workplaceThread string //nolint
 	}
 )
 
@@ -40,58 +33,71 @@ const (
 
 // assignDefaults the default prefix and status in the case
 // when there is none set.
-func (o *Options) assignDefaults() Options {
-	if o.Prefix == "" {
-		o.Prefix = DefaultPrefix
+func (c *Config) assignDefaults() *Config {
+	if c.prefix == "" {
+		c.prefix = DefaultPrefix
 	}
-	if o.DefaultStatus == "" {
-		o.DefaultStatus = DefaultStatus
+	if c.defaultStatus == "" {
+		c.defaultStatus = DefaultStatus
 	}
-	return *o
+	return c
 }
 
 // optionFunc is a function type that configures a T instance.
 type optionFunc func(config *Config)
 
 // Options is the type used to configure a new T instance.
-type TestOptions struct {
+type Options struct {
 	optFuncs []optionFunc
 }
 
 // NewOptions creates an empty Options instance.
-func NewOptions() *TestOptions {
-	return &TestOptions{}
+func NewOptions() *Options {
+	return &Options{}
 }
 
-func (op *TestOptions) Prefix(prefix string) *TestOptions {
+// Version is the currently running version of the service
+// or application.
+func (op *Options) Version(version string) *Options {
+	op.optFuncs = append(op.optFuncs, func(config *Config) {
+		config.version = version
+	})
+	return op
+}
+
+// Prefix is the string written to the log before any
+// message.
+func (op *Options) Prefix(prefix string) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.prefix = prefix
 	})
 	return op
 }
 
-func (op *TestOptions) DefaultStatus(status string) *TestOptions {
+// DefaultStatus is the status code for HTTP requests
+// when none is set.
+func (op *Options) DefaultStatus(status string) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.defaultStatus = status
 	})
 	return op
 }
 
-func (op *TestOptions) Service(service string) *TestOptions {
+func (op *Options) Service(service string) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.service = service
 	})
 	return op
 }
 
-func (op *TestOptions) WithMongoClient(client *mongo.Client) *TestOptions {
+func (op *Options) WithMongoClient(client *mongo.Client) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.mongoClient = client
 	})
 	return op
 }
 
-func (op *TestOptions) WithWorkplaceNotifier(token string) *TestOptions {
+func (op *Options) WithWorkplaceNotifier(token string) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.workplaceToken = token
 	})
