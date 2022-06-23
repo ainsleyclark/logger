@@ -160,9 +160,9 @@ func (t *LoggerTestSuite) TestFormatter() {
 		t.Run(name, func() {
 			test.entry.Time = now
 			f := Formatter{
-				Options: Options{
-					Prefix:        "test",
-					DefaultStatus: "test",
+				Config: &Config{
+					prefix:        "test",
+					defaultStatus: "test",
 				},
 				Colours: false,
 			}

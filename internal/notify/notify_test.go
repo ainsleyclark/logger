@@ -37,7 +37,7 @@ func TestNewFireHook(t *testing.T) {
 			m := &mocks.Notifier{}
 			m.On("Notify", mock.Anything, mock.Anything).
 				Return(nil)
-			hook, err := NewFireHook(test.input)
+			hook, err := NewFireHook(Options{Token: test.input})
 			if err != nil {
 				assert.Contains(t, errors.Message(err), test.want)
 				return
@@ -102,7 +102,7 @@ func TestFire(t *testing.T) {
 			if test.mock != nil {
 				test.mock(m)
 			}
-			fire(m, test.input)
+			fire(m, test.input, Options{})
 			assert.Contains(t, buf.String(), test.want)
 		})
 	}

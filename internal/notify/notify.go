@@ -15,57 +15,78 @@ import (
 	"log"
 )
 
-// NewFireHook is responsible for creating a workplace client and
-// returning a FireHook sending log entire to a workplace
-// thread if an error occurred within the system.
-func NewFireHook(token string) (mogrus.FireHook, error) {
-	const op = "Notify.NewFireHook"
-	wp, err := workplace.New(workplace.Config{Token: token})
+// NewWorkplaceHook creates a new Workplace hook.
+// Returns an error if the client could not be created.
+func NewWorkplaceHook(opts Options) (*WorkplaceHook, error) {
+	wp, err := workplace.New(workplace.Config{Token: opts.Token})
 	if err != nil {
-		return nil, errors.NewInvalid(err, "Error creating Workplace Client", op)
+		return nil, err
 	}
-	return func(entry mogrus.Entry) {
-		go fire(wp, entry)
+	return &WorkplaceHook{
+		wp:        wp,
+		options:   opts,
+		LogLevels: logrus.AllLevels,
 	}, nil
 }
 
-const (
-	// Thread is the thread id to send logs to on Workplace.
-	Thread = "t_3950977074953346"
+type (
+	// WorkplaceHook represents the workplace hook notifier
+	// for log entries.
+	WorkplaceHook struct {
+		wp        workplace.Notifier
+		options   Options
+		LogLevels []logrus.Level
+	}
+	// Options defines the configuration needed to fire logs
+	// via the Workplace API.
+	Options struct {
+		Token   string
+		Thread  string
+		Service string
+		Version string
+	}
 )
 
-// fire is a helper that sends messages off to Workplace which
-// is called concurrently.
-func fire(wp workplace.Notifier, entry mogrus.Entry) {
-	// Bail if the error is nil.
-	if entry.Error == nil {
-		return
-	}
+// Fire will be called when some logging function is
+// called with current hook. It will format log
+// entry to string and write it to
+// appropriate writer
+func (hook *WorkplaceHook) Fire(entry *logrus.Entry) error {
+	go func() {
+		formatted := mogrus.ToEntry(entry)
 
-	// Bail if the error code is not anything but INTERNAL,
-	// we don't want to notify users of invalid or pesky
-	// log entries.
-	if entry.Error.Code != errors.INTERNAL {
-		return
-	}
+		// Bail if the error is nil.
+		if formatted.Error == nil {
+			return
+		}
 
-	// Use the Workplace client to send a message via the bot.
-	err := wp.Notify(workplace.Transmission{
-		Thread:  Thread,
-		Message: formatMessage(entry),
-	})
-	if err != nil {
-		log.Println(err.Error()) // We can't use the standard logger as it may cause a loop.
-	}
+		// Bail if the error code is not anything but INTERNAL,
+		// we don't want to notify users of invalid or pesky
+		// log entries.
+		if formatted.Error.Code != errors.INTERNAL {
+			return
+		}
+
+		// Use the Workplace client to send a message via the bot.
+		err := hook.wp.Notify(workplace.Transmission{
+			Thread:  hook.options.Thread,
+			Message: hook.formatMessage(formatted),
+		})
+		if err != nil {
+			log.Println(err.Error()) // We can't use the standard logger as it may cause a loop.
+		}
+	}()
+
+	return nil
 }
 
 // formatMessage prints a formatted message from the log entry to
 // a user friendly message.
-func formatMessage(entry mogrus.Entry) string {
+func (hook *WorkplaceHook) formatMessage(entry mogrus.Entry) string {
 	buf := bytes.Buffer{}
 
 	// Write Krang & version from the latest build.
-	buf.WriteString(fmt.Sprintf("%v Krang v%s\n", emoji.ChartIncreasing, ""))
+	buf.WriteString(fmt.Sprintf("%v %s v%s\n", hook.options.Service, emoji.ChartIncreasing, hook.options.Version))
 
 	// Write intro text.
 	buf.WriteString("\U0001FAE0 Error detected in Krang, please see the information below for more details.\n\n")
@@ -96,4 +117,10 @@ func formatMessage(entry mogrus.Entry) string {
 	}
 
 	return buf.String()
+}
+
+// Levels Define on which log levels this hook would
+// trigger.
+func (hook *WorkplaceHook) Levels() []logrus.Level {
+	return hook.LogLevels
 }

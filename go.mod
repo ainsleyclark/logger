@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/ainsleyclark/errors v0.0.1
-	github.com/ainsleyclark/mogrus v0.0.2
+	github.com/ainsleyclark/mogrus v0.0.3
 	github.com/ainsleyclark/workplace v0.0.1
 	github.com/enescakir/emoji v1.0.0
 	github.com/gookit/color v1.5.1
@@ -17,7 +17,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/klauspost/compress v1.15.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

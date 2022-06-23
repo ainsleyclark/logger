@@ -1,7 +1,7 @@
 github.com/ainsleyclark/errors v0.0.1 h1:xiKskV6yEtcdViEKFlxxuSBcj0/3HIzemb7WHBJnRRQ=
 github.com/ainsleyclark/errors v0.0.1/go.mod h1:nrPz6nlMilDXNc+hhd0OG1orC0x4eTRpCWu1M+D7i/I=
-github.com/ainsleyclark/mogrus v0.0.2 h1:+lsKEbJlGKxWP3EDsAYxJUZ0P/O9NdcX7DK4mTJ9yWs=
-github.com/ainsleyclark/mogrus v0.0.2/go.mod h1:EJ6Kl6PpklqlJasx7Jl+oe6NaiVSPnJCW+2TUJR8OOY=
+github.com/ainsleyclark/mogrus v0.0.3 h1:nh2R41ZZVm0Yvjw2ysfsUPnEjWVx25jvFRElj4ncqIs=
+github.com/ainsleyclark/mogrus v0.0.3/go.mod h1:EJ6Kl6PpklqlJasx7Jl+oe6NaiVSPnJCW+2TUJR8OOY=
 github.com/ainsleyclark/workplace v0.0.1 h1:88KSvOkeWc64T/q0tKs9+j19G9g6hMeoLz5UbfPS7qY=
 github.com/ainsleyclark/workplace v0.0.1/go.mod h1:f3zWjMayNBuN4oFC1Mt0UWlwSQF2g4K3zJ96CMUiN6A=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

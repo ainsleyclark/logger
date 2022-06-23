@@ -5,6 +5,7 @@
 package logger
 
 import (
+	"github.com/ainsleyclark/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -17,8 +18,9 @@ type (
 		defaultStatus   string
 		service         string
 		mongoClient     *mongo.Client
+		mongoDatabase   string
 		workplaceToken  string
-		workplaceThread string //nolint
+		workplaceThread string
 	}
 )
 
@@ -30,6 +32,27 @@ const (
 	// is set.
 	DefaultStatus = "RED"
 )
+
+// Validate ensures the configuration is sanity checked
+// before creating a new Logger.
+func (c *Config) Validate() error {
+	if c.service == "" {
+		return errors.New("service name cannot be empty")
+	}
+	if c.mongoClient != nil && c.mongoDatabase == "" {
+		return errors.New("database name cannot be empty")
+	}
+	if c.mongoClient == nil && c.mongoDatabase != "" {
+		return errors.New("mongo client cannot be nil")
+	}
+	if c.workplaceToken != "" && c.workplaceThread == "" {
+		return errors.New("workplace thread cannot be nil")
+	}
+	if c.workplaceToken == "" && c.workplaceThread != "" {
+		return errors.New("workplace token cannot be nil")
+	}
+	return nil
+}
 
 // assignDefaults the default prefix and status in the case
 // when there is none set.
@@ -83,6 +106,9 @@ func (op *Options) DefaultStatus(status string) *Options {
 	return op
 }
 
+// Service is used for Mongo logging, and general stdout logs.
+// This name will correlate to the name of the Mongo
+// database, if WithMongoClient is called.
 func (op *Options) Service(service string) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.service = service
@@ -90,16 +116,21 @@ func (op *Options) Service(service string) *Options {
 	return op
 }
 
-func (op *Options) WithMongoCollection(client *mongo.Client) *Options {
+// WithMongoClient allows for logging directly to Mongo.
+func (op *Options) WithMongoClient(client *mongo.Client, database string) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.mongoClient = client
+		config.mongoDatabase = database
 	})
 	return op
 }
 
-func (op *Options) WithWorkplaceNotifier(token string) *Options {
+// WithWorkplaceNotifier sends errors that have been marked
+// as errors.INTERNAL to a Workplace thread.
+func (op *Options) WithWorkplaceNotifier(token, thread string) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.workplaceToken = token
+		config.workplaceThread = thread
 	})
 	return op
 }

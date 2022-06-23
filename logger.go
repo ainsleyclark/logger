@@ -6,10 +6,13 @@ package logger
 
 import (
 	"context"
+	"github.com/ainsleyclark/mogrus"
+	"github.com/krang-backlink/logger/internal/notify"
 	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 var (
@@ -30,6 +33,10 @@ func New(ctx context.Context, opts ...*Options) error {
 		for _, optFn := range opt.optFuncs {
 			optFn(c)
 		}
+	}
+	err := c.Validate()
+	if err != nil {
+		return err
 	}
 	return initialise(ctx, c.assignDefaults())
 }
@@ -104,9 +111,16 @@ func SetLogger(l *logrus.Logger) {
 	logger = l
 }
 
+var (
+	// newMogrus is an alias for mogrus.New
+	newMogrus = mogrus.New
+	// newHook is an alias for notify.NewFireHook
+	newHook = notify.NewWorkplaceHook
+)
+
 // initialise sets the standard log level, sets the
 // log formatter and discards the stdout.
-func initialise(ctx context.Context, cfg *Config) error {
+func initialise(ctx context.Context, cfg *Config) error { //nolint
 	logger.SetLevel(logrus.TraceLevel)
 
 	logger.SetFormatter(&Formatter{
@@ -139,32 +153,57 @@ func initialise(ctx context.Context, cfg *Config) error {
 		},
 	})
 
-	if cfg.mongoClient == nil {
-		return nil
+	err := addWorkplaceHook(cfg)
+	if err != nil {
+		return err
 	}
 
-	//hook, err := mogrus.New(ctx, mogrus.Options{
-	//	Collection: collection,
-	//	FireHook:   hook,
-	//	ExpirationLevels: mogrus.ExpirationLevels{
-	//		logrus.TraceLevel: time.Hour * 24,
-	//		logrus.DebugLevel: time.Hour * 24,
-	//		logrus.InfoLevel:  time.Hour * 24 * 7,
-	//		logrus.ErrorLevel: time.Hour * 24 * 7 * 4,
-	//		logrus.WarnLevel:  time.Hour * 24 * 7 * 4,
-	//		logrus.PanicLevel: time.Hour * 24 * 7 * 4 * 6,
-	//		logrus.FatalLevel: time.Hour * 24 * 7 * 4 * 6,
-	//	},
-	//})
-	//if err != nil {
-	//	return err
-	//}
-	//logger.AddHook(hook)
-	//
-	//// Add the Mogrus hook if a collection is passed.
-	//if collection != nil {
-	//
-	//}
+	err = addMogrusHook(ctx, cfg)
+	if err != nil {
+		return err
+	}
 
+	return nil
+}
+
+// addWorkplaceHook adds the Workplace hook if
+// the thread and token exists.
+func addWorkplaceHook(cfg *Config) error {
+	if cfg.workplaceThread != "" && cfg.workplaceToken != "" {
+		wpHook, err := newHook(notify.Options{
+			Token:   cfg.workplaceToken,
+			Thread:  cfg.workplaceThread,
+			Service: cfg.service,
+			Version: cfg.version,
+		})
+		if err != nil {
+			return err
+		}
+		logger.AddHook(wpHook)
+	}
+	return nil
+}
+
+// addMogrusHook adds the Mogrus hook if
+// the client exists.
+func addMogrusHook(ctx context.Context, cfg *Config) error {
+	if cfg.mongoClient != nil {
+		mogrusHook, err := newMogrus(ctx, mogrus.Options{
+			Collection: cfg.mongoClient.Database(cfg.mongoDatabase).Collection(cfg.service),
+			ExpirationLevels: mogrus.ExpirationLevels{
+				logrus.TraceLevel: time.Hour * 24,
+				logrus.DebugLevel: time.Hour * 24,
+				logrus.InfoLevel:  time.Hour * 24 * 7,
+				logrus.ErrorLevel: time.Hour * 24 * 7 * 4,
+				logrus.WarnLevel:  time.Hour * 24 * 7 * 4,
+				logrus.PanicLevel: time.Hour * 24 * 7 * 4 * 6,
+				logrus.FatalLevel: time.Hour * 24 * 7 * 4 * 6,
+			},
+		})
+		if err != nil {
+			return err
+		}
+		logger.AddHook(mogrusHook)
+	}
 	return nil
 }

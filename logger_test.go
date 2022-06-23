@@ -9,35 +9,82 @@ import (
 	"context"
 	"fmt"
 	"github.com/ainsleyclark/errors"
+	"github.com/ainsleyclark/mogrus"
+	"github.com/krang-backlink/logger/internal/notify"
 	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/integration/mtest"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (t *LoggerTestSuite) TestNew() {
-	err := New(context.Background(), Options{})
-	t.NoError(err)
-	t.Equal(logrus.TraceLevel, logger.Level)
-	logger = logrus.New()
-}
+	tt := map[string]struct {
+		input  func() *Options
+		mogrus func(ctx context.Context, opts mogrus.Options) (logrus.Hook, error)
+		hook   func(opts notify.Options) (mogrus.FireHook, error)
+		want   any
+	}{
+		"Simple": {
+			func() *Options {
+				return NewOptions().Service("service")
+			},
+			mogrus.New,
+			notify.NewFireHook,
+			nil,
+		},
+		"Validation Error": {
+			func() *Options {
+				return NewOptions()
+			},
+			mogrus.New,
+			notify.NewFireHook,
+			"service name cannot be empty",
+		},
+		"With Hook": {
+			func() *Options {
+				return NewOptions().Service("service")
+			},
+			mogrus.New,
+			notify.NewFireHook,
+			nil,
+		},
+		"New Hook Error": {
+			func() *Options {
+				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread")
+			},
+			mogrus.New,
+			func(opts notify.Options) (mogrus.FireHook, error) {
+				return nil, errors.New("hook error")
+			},
+			"hook error",
+		},
+		"Mogrus Error": {
+			func() *Options {
+				return NewOptions().Service("service").WithMongoClient(&mongo.Client{}, "database")
+			},
+			func(ctx context.Context, opts mogrus.Options) (logrus.Hook, error) {
+				return nil, errors.New("mogrus error")
+			},
+			notify.NewFireHook,
+			"mogrus error",
+		},
+	}
 
-func (t *LoggerTestSuite) TestNewWithMongoClient() {
-	mt := mtest.New(t.T(), mtest.NewOptions().ClientType(mtest.Mock))
-	defer mt.Close()
-
-	mt.Run("Success", func(mtt *mtest.T) {
-		mtt.AddMockResponses(mtest.CreateSuccessResponse(
-			bson.D{{"key", "value"}}...)) //nolint
-		err := NewWithMongoClient(context.Background(), Options{}, mtt.Client, nil)
-		t.NoError(err)
-	})
-
-	mt.Run("Error", func(mtt *mtest.T) {
-		err := NewWithMongoClient(context.Background(), Options{}, mtt.Client, nil)
-		t.Error(err)
-	})
-
-	logger = logrus.New()
+	for name, test := range tt {
+		t.Run(name, func() {
+			origMogrus := newMogrus
+			origHook := newHook
+			defer func() {
+				newMogrus = origMogrus
+				newHook = origHook
+			}()
+			newMogrus = test.mogrus
+			newHook = test.hook
+			err := New(context.TODO(), test.input())
+			if err != nil {
+				t.Contains(err.Error(), test.want)
+				return
+			}
+		})
+	}
 }
 
 func (t *LoggerTestSuite) TestLogger() {
