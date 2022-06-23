@@ -6,13 +6,10 @@ package logger
 
 import (
 	"context"
-	"github.com/ainsleyclark/mogrus"
 	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/mongo"
 	"io"
 	"io/ioutil"
 	"os"
-	"time"
 )
 
 var (
@@ -27,14 +24,14 @@ type (
 
 // New creates a new standard logger and sets logging levels
 // dependent on environment variables.
-func New(ctx context.Context, opts Options) error {
-	return initialise(ctx, opts, nil, nil)
-}
-
-// NewWithMongoClient creates a new standard logger with a
-// MongoDB hook
-func NewWithMongoClient(ctx context.Context, opts Options, client *mongo.Client, hook mogrus.FireHook) error {
-	return initialise(ctx, opts, client.Database("logs").Collection("api"), hook)
+func New(ctx context.Context, opts ...*Options) error {
+	c := &Config{}
+	for _, opt := range opts {
+		for _, optFn := range opt.optFuncs {
+			optFn(c)
+		}
+	}
+	return initialise(ctx, c.assignDefaults())
 }
 
 // Trace logs a trace message with args.
@@ -109,11 +106,11 @@ func SetLogger(l *logrus.Logger) {
 
 // initialise sets the standard log level, sets the
 // log formatter and discards the stdout.
-func initialise(ctx context.Context, opts Options, collection *mongo.Collection, hook mogrus.FireHook) error {
+func initialise(ctx context.Context, cfg *Config) error {
 	logger.SetLevel(logrus.TraceLevel)
 
 	logger.SetFormatter(&Formatter{
-		Options:         opts.assignDefaults(),
+		Config:          cfg,
 		TimestampFormat: "2006-01-02 15:04:05",
 		Colours:         true,
 	})
@@ -142,26 +139,32 @@ func initialise(ctx context.Context, opts Options, collection *mongo.Collection,
 		},
 	})
 
-	// Add the Mogrus hook if a collection is passed.
-	if collection != nil {
-		hook, err := mogrus.New(ctx, mogrus.Options{
-			Collection: collection,
-			FireHook:   hook,
-			ExpirationLevels: mogrus.ExpirationLevels{
-				logrus.TraceLevel: time.Hour * 24,
-				logrus.DebugLevel: time.Hour * 24,
-				logrus.InfoLevel:  time.Hour * 24 * 7,
-				logrus.ErrorLevel: time.Hour * 24 * 7 * 4,
-				logrus.WarnLevel:  time.Hour * 24 * 7 * 4,
-				logrus.PanicLevel: time.Hour * 24 * 7 * 4 * 6,
-				logrus.FatalLevel: time.Hour * 24 * 7 * 4 * 6,
-			},
-		})
-		if err != nil {
-			return err
-		}
-		logger.AddHook(hook)
+	if cfg.mongoClient == nil {
+		return nil
 	}
+
+	//hook, err := mogrus.New(ctx, mogrus.Options{
+	//	Collection: collection,
+	//	FireHook:   hook,
+	//	ExpirationLevels: mogrus.ExpirationLevels{
+	//		logrus.TraceLevel: time.Hour * 24,
+	//		logrus.DebugLevel: time.Hour * 24,
+	//		logrus.InfoLevel:  time.Hour * 24 * 7,
+	//		logrus.ErrorLevel: time.Hour * 24 * 7 * 4,
+	//		logrus.WarnLevel:  time.Hour * 24 * 7 * 4,
+	//		logrus.PanicLevel: time.Hour * 24 * 7 * 4 * 6,
+	//		logrus.FatalLevel: time.Hour * 24 * 7 * 4 * 6,
+	//	},
+	//})
+	//if err != nil {
+	//	return err
+	//}
+	//logger.AddHook(hook)
+	//
+	//// Add the Mogrus hook if a collection is passed.
+	//if collection != nil {
+	//
+	//}
 
 	return nil
 }

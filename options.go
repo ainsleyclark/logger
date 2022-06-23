@@ -43,10 +43,10 @@ func (c *Config) assignDefaults() *Config {
 	return c
 }
 
-// optionFunc is a function type that configures a T instance.
+// optionFunc is a function type that configures a config instance.
 type optionFunc func(config *Config)
 
-// Options is the type used to configure a new T instance.
+// Options is the type used to configure a new config instance.
 type Options struct {
 	optFuncs []optionFunc
 }
@@ -90,7 +90,7 @@ func (op *Options) Service(service string) *Options {
 	return op
 }
 
-func (op *Options) WithMongoClient(client *mongo.Client) *Options {
+func (op *Options) WithMongoCollection(client *mongo.Client) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.mongoClient = client
 	})

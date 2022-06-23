@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/mogrus"
+	"github.com/krang-backlink/logger/gen/mocks/test"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -16,11 +17,34 @@ import (
 	"testing"
 )
 
-func TestNotifyHook(t *testing.T) {
-	m := &mocks.Notifier{}
-	m.On("Notify", mock.Anything, mock.Anything).
-		Return(nil)
-	NotifyHook(m)(mogrus.Entry{})
+func TestNewFireHook(t *testing.T) {
+	tt := map[string]struct {
+		input string
+		want  any
+	}{
+		"Success": {
+			"token",
+			nil,
+		},
+		"Error": {
+			"",
+			"Error creating Workplace Client",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			m := &mocks.Notifier{}
+			m.On("Notify", mock.Anything, mock.Anything).
+				Return(nil)
+			hook, err := NewFireHook(test.input)
+			if err != nil {
+				assert.Contains(t, errors.Message(err), test.want)
+				return
+			}
+			hook(mogrus.Entry{})
+		})
+	}
 }
 
 func TestFire(t *testing.T) {

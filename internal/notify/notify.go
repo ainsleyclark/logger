@@ -9,19 +9,30 @@ import (
 	"fmt"
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/mogrus"
+	"github.com/ainsleyclark/workplace"
 	"github.com/enescakir/emoji"
-	"github.com/reddico-dev/krang-api/version"
 	"github.com/sirupsen/logrus"
 	"log"
 )
 
-// NotifyHook is responsible for sending log entire to a workplace
+// NewFireHook is responsible for creating a workplace client and
+// returning a FireHook sending log entire to a workplace
 // thread if an error occurred within the system.
-func NotifyHook(wp workplace.Notifier) mogrus.FireHook {
+func NewFireHook(token string) (mogrus.FireHook, error) {
+	const op = "Notify.NewFireHook"
+	wp, err := workplace.New(workplace.Config{Token: token})
+	if err != nil {
+		return nil, errors.NewInvalid(err, "Error creating Workplace Client", op)
+	}
 	return func(entry mogrus.Entry) {
 		go fire(wp, entry)
-	}
+	}, nil
 }
+
+const (
+	// Thread is the thread id to send logs to on Workplace.
+	Thread = "t_3950977074953346"
+)
 
 // fire is a helper that sends messages off to Workplace which
 // is called concurrently.
@@ -40,7 +51,7 @@ func fire(wp workplace.Notifier, entry mogrus.Entry) {
 
 	// Use the Workplace client to send a message via the bot.
 	err := wp.Notify(workplace.Transmission{
-		Thread:  workplace.Threads.Software,
+		Thread:  Thread,
 		Message: formatMessage(entry),
 	})
 	if err != nil {
@@ -54,7 +65,7 @@ func formatMessage(entry mogrus.Entry) string {
 	buf := bytes.Buffer{}
 
 	// Write Krang & version from the latest build.
-	buf.WriteString(fmt.Sprintf("%v Krang v%s\n", emoji.ChartIncreasing, version.Version))
+	buf.WriteString(fmt.Sprintf("%v Krang v%s\n", emoji.ChartIncreasing, ""))
 
 	// Write intro text.
 	buf.WriteString("\U0001FAE0 Error detected in Krang, please see the information below for more details.\n\n")

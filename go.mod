@@ -5,10 +5,11 @@ go 1.18
 require (
 	github.com/ainsleyclark/errors v0.0.1
 	github.com/ainsleyclark/mogrus v0.0.2
+	github.com/ainsleyclark/workplace v0.0.1
 	github.com/enescakir/emoji v1.0.0
 	github.com/gookit/color v1.5.1
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.7.4
 	go.mongodb.org/mongo-driver v1.9.1
 )
 
@@ -20,7 +21,7 @@ require (
 	github.com/klauspost/compress v1.15.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/stretchr/objx v0.1.0 // indirect
+	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect

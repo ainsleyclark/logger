@@ -17,7 +17,7 @@ import (
 
 // Formatter implements logrus.Formatter interface.
 type Formatter struct {
-	Options         Options
+	Config          *Config
 	Colours         bool
 	TimestampFormat string
 	entry           *logrus.Entry
@@ -33,7 +33,7 @@ func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	f.buf = b
 	f.entry = entry
 
-	b.WriteString("[" + strings.ToUpper(f.Options.Prefix) + "] ")
+	b.WriteString("[" + strings.ToUpper(f.Config.prefix) + "] ")
 
 	f.Time()
 	f.StatusCode()
@@ -76,7 +76,7 @@ func (f *Formatter) StatusCode() {
 	status, ok := f.entry.Data["status_code"]
 	if !ok {
 		cc = color.Style{color.FgLightWhite, color.BgBlack, color.OpBold}
-		f.buf.WriteString(cc.Sprint(strings.ToUpper(f.Options.DefaultStatus)))
+		f.buf.WriteString(cc.Sprint(strings.ToUpper(f.Config.defaultStatus)))
 	}
 
 	if codeInt, ok := status.(int); ok {
