@@ -17,6 +17,7 @@ go get -u github.com/krang-backlink/logger
 
 ## Recipes
 
+### Simple
 Creates a simple logger with stdout.
 
 ```go
@@ -37,6 +38,8 @@ func Simple() error {
 }
 ```
 
+### WithWorkplace
+
 ```go
 func WithWorkplace() error {
 	opts := logger.NewOptions().
@@ -53,6 +56,8 @@ func WithWorkplace() error {
 	return nil
 }
 ```
+
+### WithMongo
 
 ```go
 func WithMongo() error {
@@ -79,6 +84,8 @@ func WithMongo() error {
 	return nil
 }
 ```
+
+### KitchenSink
 
 ```go
 func KitchenSink() error {
