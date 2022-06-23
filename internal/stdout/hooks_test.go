@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"github.com/ainsleyclark/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"io"
+	"testing"
 )
 
 type mockFormatErr struct{}
@@ -30,7 +32,23 @@ func (m *mockWriterErr) Write(p []byte) (n int, err error) {
 	return 0, fmt.Errorf("err")
 }
 
-func (t *LoggerTestSuite) TestWriterHook_Fire() {
+// SetupHooks is a helper function for setting up
+// the hooks for testing.
+func SetupHooks(writer io.Writer) Hook {
+	return Hook{
+		Writer: writer,
+		LogLevels: []logrus.Level{
+			logrus.InfoLevel,
+			logrus.DebugLevel,
+			logrus.PanicLevel,
+			logrus.FatalLevel,
+			logrus.ErrorLevel,
+			logrus.WarnLevel,
+		},
+	}
+}
+
+func TestHook_Fire(t *testing.T) {
 	buf := &bytes.Buffer{}
 
 	tt := map[string]struct {
@@ -62,20 +80,20 @@ func (t *LoggerTestSuite) TestWriterHook_Fire() {
 	}
 
 	for name, test := range tt {
-		t.Run(name, func() {
-			h := t.SetupHooks(test.input)
+		t.Run(name, func(t *testing.T) {
+			h := SetupHooks(test.input)
 			err := h.Fire(test.entry)
 			if err != nil {
-				t.Contains(errors.Message(err), test.want)
+				assert.Contains(t, errors.Message(err), test.want)
 				return
 			}
-			t.Equal(test.want, buf.String())
+			assert.Equal(t, test.want, buf.String())
 		})
 	}
 }
 
-func (t *LoggerTestSuite) TestWriterHook_Levels() {
-	h := t.SetupHooks(nil)
+func TestHook_Levels(t *testing.T) {
+	h := SetupHooks(nil)
 	want := []logrus.Level{
 		logrus.InfoLevel,
 		logrus.DebugLevel,
@@ -84,5 +102,5 @@ func (t *LoggerTestSuite) TestWriterHook_Levels() {
 		logrus.ErrorLevel,
 		logrus.WarnLevel,
 	}
-	t.Equal(want, h.Levels())
+	assert.Equal(t, want, h.Levels())
 }

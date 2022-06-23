@@ -4,8 +4,15 @@
 
 package test
 
-import "github.com/ainsleyclark/workplace"
+import (
+	"github.com/ainsleyclark/workplace"
+	"github.com/sirupsen/logrus"
+)
 
 type Notifier interface {
 	workplace.Notifier
+}
+
+type Hook interface {
+	logrus.Hook
 }

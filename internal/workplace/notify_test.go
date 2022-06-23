@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/mogrus"
-	"github.com/krang-backlink/logger/gen/mocks/test"
+	mocks "github.com/krang-backlink/logger/gen/mocks/test"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -17,7 +17,7 @@ import (
 	"testing"
 )
 
-func TestNewFireHook(t *testing.T) {
+func TestNewHook(t *testing.T) {
 	tt := map[string]struct {
 		input string
 		want  any
@@ -28,26 +28,28 @@ func TestNewFireHook(t *testing.T) {
 		},
 		"Error": {
 			"",
-			"Error creating Workplace Client",
+			"token cannot be nil",
 		},
 	}
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			m := &mocks.Notifier{}
-			m.On("Notify", mock.Anything, mock.Anything).
-				Return(nil)
-			hook, err := NewFireHook(Options{Token: test.input})
+			_, err := NewHook(Options{Token: test.input})
 			if err != nil {
-				assert.Contains(t, errors.Message(err), test.want)
+				assert.Contains(t, err.Error(), test.want)
 				return
 			}
-			hook(mogrus.Entry{})
 		})
 	}
 }
 
-func TestFire(t *testing.T) {
+func TestHook_Fire(t *testing.T) {
+	h := Hook{}
+	got := h.Fire(&logrus.Entry{})
+	assert.Nil(t, got)
+}
+
+func TestHook_Process(t *testing.T) {
 	entry := mogrus.Entry{
 		Level:   "info",
 		Message: "message",
@@ -102,8 +104,21 @@ func TestFire(t *testing.T) {
 			if test.mock != nil {
 				test.mock(m)
 			}
-			fire(m, test.input, Options{})
+			h := Hook{
+				wp:        m,
+				options:   Options{},
+				LogLevels: logrus.AllLevels,
+			}
+
+			h.process(test.input)
+
 			assert.Contains(t, buf.String(), test.want)
 		})
 	}
+}
+
+func TestHook_Levels(t *testing.T) {
+	h := Hook{LogLevels: logrus.AllLevels}
+	want := logrus.AllLevels
+	assert.Equal(t, want, h.Levels())
 }

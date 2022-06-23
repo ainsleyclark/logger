@@ -10,9 +10,9 @@ import (
 	"io"
 )
 
-// WriterHook is a hook that writes logs of specified
+// Hook is a hook that writes logs of specified
 // LogLevels to specified Writer.
-type WriterHook struct {
+type Hook struct {
 	// The io.Writer, this can be stdout or stderr.
 	Writer io.Writer
 	// The slice of log levels the writer can too.
@@ -23,7 +23,7 @@ type WriterHook struct {
 // called with current hook. It will format log
 // entry to string and write it to
 // appropriate writer
-func (hook *WriterHook) Fire(entry *logrus.Entry) error {
+func (hook *Hook) Fire(entry *logrus.Entry) error {
 	const op = "Logger.Hook.Fire"
 
 	line, err := entry.String()
@@ -41,6 +41,6 @@ func (hook *WriterHook) Fire(entry *logrus.Entry) error {
 
 // Levels Define on which log levels this hook would
 // trigger.
-func (hook *WriterHook) Levels() []logrus.Level {
+func (hook *Hook) Levels() []logrus.Level {
 	return hook.LogLevels
 }

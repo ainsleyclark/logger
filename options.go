@@ -17,8 +17,7 @@ type (
 		prefix          string
 		defaultStatus   string
 		service         string
-		mongoClient     *mongo.Client
-		mongoDatabase   string
+		mongoCollection *mongo.Collection
 		workplaceToken  string
 		workplaceThread string
 	}
@@ -38,12 +37,6 @@ const (
 func (c *Config) Validate() error {
 	if c.service == "" {
 		return errors.New("service name cannot be empty")
-	}
-	if c.mongoClient != nil && c.mongoDatabase == "" {
-		return errors.New("database name cannot be empty")
-	}
-	if c.mongoClient == nil && c.mongoDatabase != "" {
-		return errors.New("mongo client cannot be nil")
 	}
 	if c.workplaceToken != "" && c.workplaceThread == "" {
 		return errors.New("workplace thread cannot be nil")
@@ -108,7 +101,7 @@ func (op *Options) DefaultStatus(status string) *Options {
 
 // Service is used for Mongo logging, and general stdout logs.
 // This name will correlate to the name of the Mongo
-// database, if WithMongoClient is called.
+// database, if WithMongoCollection is called.
 func (op *Options) Service(service string) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.service = service
@@ -116,11 +109,10 @@ func (op *Options) Service(service string) *Options {
 	return op
 }
 
-// WithMongoClient allows for logging directly to Mongo.
-func (op *Options) WithMongoClient(client *mongo.Client, database string) *Options {
+// WithMongoCollection allows for logging directly to Mongo.
+func (op *Options) WithMongoCollection(collection *mongo.Collection) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
-		config.mongoClient = client
-		config.mongoDatabase = database
+		config.mongoCollection = collection
 	})
 	return op
 }

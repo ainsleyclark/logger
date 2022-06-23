@@ -17,25 +17,9 @@ func (t *LoggerTestSuite) TestConfig_Validate() {
 			Config{},
 			"service name cannot be empty",
 		},
-		"Database Name": {
-			Config{
-				service:     "service",
-				mongoClient: &mongo.Client{},
-			},
-			"database name cannot be empty",
-		},
-		"Mongo Client": {
-			Config{
-				service:       "service",
-				mongoDatabase: "database",
-			},
-			"mongo client cannot be nil",
-		},
 		"Workplace Thread": {
 			Config{
 				service:        "service",
-				mongoClient:    &mongo.Client{},
-				mongoDatabase:  "database",
 				workplaceToken: "token",
 			},
 			"workplace thread cannot be nil",
@@ -43,8 +27,6 @@ func (t *LoggerTestSuite) TestConfig_Validate() {
 		"Workplace Token": {
 			Config{
 				service:         "service",
-				mongoClient:     &mongo.Client{},
-				mongoDatabase:   "database",
 				workplaceThread: "thread",
 			},
 			"workplace token cannot be nil",
@@ -52,8 +34,6 @@ func (t *LoggerTestSuite) TestConfig_Validate() {
 		"Success": {
 			Config{
 				service:         "service",
-				mongoClient:     &mongo.Client{},
-				mongoDatabase:   "database",
 				workplaceToken:  "token",
 				workplaceThread: "thread",
 			},
@@ -88,7 +68,7 @@ func (t *LoggerTestSuite) TestOptions() {
 		Version("v0.0.1").
 		DefaultStatus("status").
 		Prefix("prefix").
-		WithMongoClient(&mongo.Client{}, "database").
+		WithMongoCollection(&mongo.Collection{}).
 		WithWorkplaceNotifier("token", "thread")
 
 	c := &Config{}
@@ -100,7 +80,6 @@ func (t *LoggerTestSuite) TestOptions() {
 	t.Equal("v0.0.1", c.version)
 	t.Equal("status", c.defaultStatus)
 	t.Equal("prefix", c.prefix)
-	t.Equal("database", c.mongoDatabase)
 	t.Equal("token", c.workplaceToken)
 	t.Equal("thread", c.workplaceThread)
 }

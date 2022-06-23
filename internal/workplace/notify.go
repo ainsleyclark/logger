@@ -15,14 +15,14 @@ import (
 	"log"
 )
 
-// NewWorkplaceHook creates a new Workplace hook.
+// NewHook creates a new Workplace hook.
 // Returns an error if the client could not be created.
-func NewWorkplaceHook(opts Options) (*WorkplaceHook, error) {
+func NewHook(opts Options) (*Hook, error) {
 	wp, err := workplace.New(workplace.Config{Token: opts.Token})
 	if err != nil {
 		return nil, err
 	}
-	return &WorkplaceHook{
+	return &Hook{
 		wp:        wp,
 		options:   opts,
 		LogLevels: logrus.AllLevels,
@@ -30,9 +30,9 @@ func NewWorkplaceHook(opts Options) (*WorkplaceHook, error) {
 }
 
 type (
-	// WorkplaceHook represents the workplace hook notifier
+	// Hook represents the workplace hook notifier
 	// for log entries.
-	WorkplaceHook struct {
+	Hook struct {
 		wp        workplace.Notifier
 		options   Options
 		LogLevels []logrus.Level
@@ -51,38 +51,37 @@ type (
 // called with current hook. It will format log
 // entry to string and write it to
 // appropriate writer
-func (hook *WorkplaceHook) Fire(entry *logrus.Entry) error {
-	go func() {
-		formatted := mogrus.ToEntry(entry)
-
-		// Bail if the error is nil.
-		if formatted.Error == nil {
-			return
-		}
-
-		// Bail if the error code is not anything but INTERNAL,
-		// we don't want to notify users of invalid or pesky
-		// log entries.
-		if formatted.Error.Code != errors.INTERNAL {
-			return
-		}
-
-		// Use the Workplace client to send a message via the bot.
-		err := hook.wp.Notify(workplace.Transmission{
-			Thread:  hook.options.Thread,
-			Message: hook.formatMessage(formatted),
-		})
-		if err != nil {
-			log.Println(err.Error()) // We can't use the standard logger as it may cause a loop.
-		}
-	}()
-
+func (hook *Hook) Fire(entry *logrus.Entry) error {
+	go hook.process(mogrus.ToEntry(entry))
 	return nil
+}
+
+func (hook *Hook) process(entry mogrus.Entry) {
+	// Bail if the error is nil.
+	if entry.Error == nil {
+		return
+	}
+
+	// Bail if the error code is not anything but INTERNAL,
+	// we don't want to notify users of invalid or pesky
+	// log entries.
+	if entry.Error.Code != errors.INTERNAL {
+		return
+	}
+
+	// Use the Workplace client to send a message via the bot.
+	err := hook.wp.Notify(workplace.Transmission{
+		Thread:  hook.options.Thread,
+		Message: hook.formatMessage(entry),
+	})
+	if err != nil {
+		log.Println(err.Error()) // We can't use the standard logger as it may cause a loop.
+	}
 }
 
 // formatMessage prints a formatted message from the log entry to
 // a user friendly message.
-func (hook *WorkplaceHook) formatMessage(entry mogrus.Entry) string {
+func (hook *Hook) formatMessage(entry mogrus.Entry) string {
 	buf := bytes.Buffer{}
 
 	// Write Krang & version from the latest build.
@@ -121,6 +120,6 @@ func (hook *WorkplaceHook) formatMessage(entry mogrus.Entry) string {
 
 // Levels Define on which log levels this hook would
 // trigger.
-func (hook *WorkplaceHook) Levels() []logrus.Level {
+func (hook *Hook) Levels() []logrus.Level {
 	return hook.LogLevels
 }

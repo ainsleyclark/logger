@@ -116,7 +116,7 @@ var (
 	// newMogrus is an alias for mogrus.New
 	newMogrus = mogrus.New
 	// newHook is an alias for notify.NewFireHook
-	newHook = workplace.NewWorkplaceHook
+	newHook = workplace.NewHook
 )
 
 // initialise sets the standard log level, sets the
@@ -134,7 +134,7 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 	logger.SetOutput(ioutil.Discard)
 
 	// Send logs with level higher than warning to stderr.
-	logger.AddHook(&stdout.WriterHook{
+	logger.AddHook(&stdout.Hook{
 		Writer: os.Stderr,
 		LogLevels: []logrus.Level{
 			logrus.PanicLevel,
@@ -145,7 +145,7 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 	})
 
 	// Send info and debug logs to stdout
-	logger.AddHook(&stdout.WriterHook{
+	logger.AddHook(&stdout.Hook{
 		Writer: os.Stdout,
 		LogLevels: []logrus.Level{
 			logrus.TraceLevel,
@@ -188,9 +188,9 @@ func addWorkplaceHook(cfg *Config) error {
 // addMogrusHook adds the Mogrus hook if
 // the client exists.
 func addMogrusHook(ctx context.Context, cfg *Config) error {
-	if cfg.mongoClient != nil {
+	if cfg.mongoCollection != nil {
 		mogrusHook, err := newMogrus(ctx, mogrus.Options{
-			Collection: cfg.mongoClient.Database(cfg.mongoDatabase).Collection(cfg.service),
+			Collection: cfg.mongoCollection,
 			ExpirationLevels: mogrus.ExpirationLevels{
 				logrus.TraceLevel: time.Hour * 24,
 				logrus.DebugLevel: time.Hour * 24,

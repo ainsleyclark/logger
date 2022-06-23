@@ -9,7 +9,6 @@ import (
 	"context"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
-	"io"
 	"testing"
 )
 
@@ -42,20 +41,4 @@ func (t *LoggerTestSuite) Setup() *bytes.Buffer {
 		Colours: false,
 	})
 	return buf
-}
-
-// SetupHooks is a helper function for setting up
-// the hooks for testing.
-func (t *LoggerTestSuite) SetupHooks(writer io.Writer) WriterHook {
-	return WriterHook{
-		Writer: writer,
-		LogLevels: []logrus.Level{
-			logrus.InfoLevel,
-			logrus.DebugLevel,
-			logrus.PanicLevel,
-			logrus.FatalLevel,
-			logrus.ErrorLevel,
-			logrus.WarnLevel,
-		},
-	}
 }
