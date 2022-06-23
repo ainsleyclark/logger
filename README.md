@@ -17,6 +17,8 @@ go get -u github.com/krang-backlink/logger
 
 ## Recipes
 
+Creates a simple logger with stdout.
+
 ```go
 func Simple() error {
 	opts := logger.NewOptions().
