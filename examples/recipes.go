@@ -6,6 +6,7 @@ package examples
 
 import (
 	"context"
+	"github.com/ainsleyclark/errors"
 	"github.com/krang-backlink/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -39,7 +40,7 @@ func WithWorkplace() error {
 		return err
 	}
 
-	logger.Info("Hello from Logger!")
+	logger.WithError(errors.NewInternal(errors.New("error"), "message", "op")).Error()
 
 	return nil
 }
