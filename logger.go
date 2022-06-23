@@ -7,7 +7,8 @@ package logger
 import (
 	"context"
 	"github.com/ainsleyclark/mogrus"
-	"github.com/krang-backlink/logger/internal/notify"
+	"github.com/krang-backlink/logger/internal/stdout"
+	"github.com/krang-backlink/logger/internal/workplace"
 	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
@@ -115,7 +116,7 @@ var (
 	// newMogrus is an alias for mogrus.New
 	newMogrus = mogrus.New
 	// newHook is an alias for notify.NewFireHook
-	newHook = notify.NewWorkplaceHook
+	newHook = workplace.NewWorkplaceHook
 )
 
 // initialise sets the standard log level, sets the
@@ -133,7 +134,7 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 	logger.SetOutput(ioutil.Discard)
 
 	// Send logs with level higher than warning to stderr.
-	logger.AddHook(&WriterHook{
+	logger.AddHook(&stdout.WriterHook{
 		Writer: os.Stderr,
 		LogLevels: []logrus.Level{
 			logrus.PanicLevel,
@@ -144,7 +145,7 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 	})
 
 	// Send info and debug logs to stdout
-	logger.AddHook(&WriterHook{
+	logger.AddHook(&stdout.WriterHook{
 		Writer: os.Stdout,
 		LogLevels: []logrus.Level{
 			logrus.TraceLevel,
@@ -170,7 +171,7 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 // the thread and token exists.
 func addWorkplaceHook(cfg *Config) error {
 	if cfg.workplaceThread != "" && cfg.workplaceToken != "" {
-		wpHook, err := newHook(notify.Options{
+		wpHook, err := newHook(workplace.Options{
 			Token:   cfg.workplaceToken,
 			Thread:  cfg.workplaceThread,
 			Service: cfg.service,

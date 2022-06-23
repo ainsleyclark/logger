@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/mogrus"
-	"github.com/krang-backlink/logger/internal/notify"
+	"github.com/krang-backlink/logger/internal/workplace"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -19,7 +19,7 @@ func (t *LoggerTestSuite) TestNew() {
 	tt := map[string]struct {
 		input  func() *Options
 		mogrus func(ctx context.Context, opts mogrus.Options) (logrus.Hook, error)
-		hook   func(opts notify.Options) (mogrus.FireHook, error)
+		hook   func(opts workplace.Options) (mogrus.FireHook, error)
 		want   any
 	}{
 		"Simple": {
@@ -27,7 +27,7 @@ func (t *LoggerTestSuite) TestNew() {
 				return NewOptions().Service("service")
 			},
 			mogrus.New,
-			notify.NewFireHook,
+			workplace.NewFireHook,
 			nil,
 		},
 		"Validation Error": {
@@ -35,7 +35,7 @@ func (t *LoggerTestSuite) TestNew() {
 				return NewOptions()
 			},
 			mogrus.New,
-			notify.NewFireHook,
+			workplace.NewFireHook,
 			"service name cannot be empty",
 		},
 		"With Hook": {
@@ -43,7 +43,7 @@ func (t *LoggerTestSuite) TestNew() {
 				return NewOptions().Service("service")
 			},
 			mogrus.New,
-			notify.NewFireHook,
+			workplace.NewFireHook,
 			nil,
 		},
 		"New Hook Error": {
@@ -51,7 +51,7 @@ func (t *LoggerTestSuite) TestNew() {
 				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread")
 			},
 			mogrus.New,
-			func(opts notify.Options) (mogrus.FireHook, error) {
+			func(opts workplace.Options) (mogrus.FireHook, error) {
 				return nil, errors.New("hook error")
 			},
 			"hook error",
@@ -63,7 +63,7 @@ func (t *LoggerTestSuite) TestNew() {
 			func(ctx context.Context, opts mogrus.Options) (logrus.Hook, error) {
 				return nil, errors.New("mogrus error")
 			},
-			notify.NewFireHook,
+			workplace.NewFireHook,
 			"mogrus error",
 		},
 	}
