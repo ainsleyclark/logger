@@ -5,6 +5,18 @@
 [![codecov](https://codecov.io/gh/krang-backlink/logger/branch/master/graph/badge.svg?token=HXEZIJ2NUY)](https://codecov.io/gh/krang-backlink/logger)
 
 
+## Why?
+
+Detailed and verbose logging is important to any application or API. This package aims to make it easy for APIs to log errors to a central location, using a Logrus Hook.
+
+## Installation
+
+```bash
+go get -u github.com/krang-backlink/logger
+```
+
+## Recipes
+
 ```go
 func Simple() error {
 	opts := logger.NewOptions().
