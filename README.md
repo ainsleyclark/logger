@@ -15,6 +15,65 @@ Detailed and verbose logging is important to any application or API. This packag
 go get -u github.com/krang-backlink/logger
 ```
 
+## Basic Usage
+
+### Functions
+
+You can use any of the loggers methods to output leveled logs.
+
+```go
+logger.Trace("Trace Entry")
+logger.Debug("Debug Entry")
+logger.Info("Info Entry")
+logger.Warn("Warn Entry")
+logger.Error("Error Entry")
+logger.Fatal("Fatal Entry")
+logger.Panic("Panic Entry")
+```
+
+### Fields
+
+Fields allow you to log out key value pairs to the logger that will appear under data. The simplest way to use the
+logger is simply the package-level exported logger.
+
+```go
+func Fields() {
+	logger.WithFields(logger.Fields{
+		"animal": "walrus",
+	}).Info("A walrus appears")
+}
+```
+
+## Errors
+
+This package is designed to work with [github.com/ainsleyclark/errors][https://github.com/ainsleyclark/errors] as such
+the `WithError` function can be used to log deatiled and rich error data.
+
+```go
+func WithError() {
+	logger.WithError(errors.NewInternal(errors.New("error"), "message", "op")).Error()
+}
+```
+
+## Middleware
+
+Middleware is provided out of the box in the form of a fire hook. Upon receiving a request from the API,
+calling `logger.Fire`will send the log entry to stdout with detailed request information and meta.
+
+```go
+func Middleware(r *http.Request) {
+	logger.Fire(logger.FireHook{
+		Request:      r,
+		Status:       http.StatusOK,
+		Message:      "Message from API",
+		Data:         map[string]any{},
+		RequestTime:  time.Now(),
+		ResponseTime: time.Now(),
+		Latency:      100,
+	})
+}
+```
+
 ## Recipes
 
 ### Simple

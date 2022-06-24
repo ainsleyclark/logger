@@ -24,6 +24,8 @@ var (
 type (
 	// Fields is an alias for logrus.Fields.
 	Fields = logrus.Fields
+	// Entry defines the data sent to Mongo and Workplace.
+	Entry = mogrus.Entry
 )
 
 // New creates a new standard logger and sets logging levels
