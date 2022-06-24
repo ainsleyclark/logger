@@ -20,8 +20,6 @@ go get -u github.com/krang-backlink/logger
 
 ### Quick Start
 
-![Logger Entries](res/entries.png)
-
 ```go
 func QuickStart() error {
 	err := logger.New(context.TODO(), logger.NewOptions().Service("service"))
@@ -40,6 +38,9 @@ func QuickStart() error {
 	return nil
 }
 ```
+
+**Outputs:**
+![Logger Entries](res/entries.png)
 
 ### Fields
 
