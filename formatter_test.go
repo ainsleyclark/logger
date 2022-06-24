@@ -159,7 +159,7 @@ func (t *LoggerTestSuite) TestFormatter() {
 	for name, test := range tt {
 		t.Run(name, func() {
 			test.entry.Time = now
-			f := Formatter{
+			f := formatter{
 				Config: &Config{
 					prefix:        "test",
 					defaultStatus: "test",

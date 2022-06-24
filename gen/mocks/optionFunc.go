@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	logger "github.com/krang-backlink/logger"
+	logger "github.com/ainsleyclark/logger"
 	mock "github.com/stretchr/testify/mock"
 )
 

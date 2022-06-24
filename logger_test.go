@@ -9,9 +9,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/ainsleyclark/errors"
+	"github.com/ainsleyclark/logger/internal/stdout"
+	"github.com/ainsleyclark/logger/internal/workplace"
 	"github.com/ainsleyclark/mogrus"
-	"github.com/krang-backlink/logger/internal/stdout"
-	"github.com/krang-backlink/logger/internal/workplace"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )

@@ -1,4 +1,4 @@
-module github.com/krang-backlink/logger
+module github.com/ainsleyclark/logger
 
 go 1.18
 

@@ -7,7 +7,7 @@ package examples
 import (
 	"context"
 	"github.com/ainsleyclark/errors"
-	"github.com/krang-backlink/logger"
+	"github.com/ainsleyclark/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"

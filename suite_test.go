@@ -36,7 +36,7 @@ func (t *LoggerTestSuite) Setup() *bytes.Buffer {
 	logger.SetLevel(logrus.TraceLevel)
 	logger.SetOutput(buf)
 	c := Config{}
-	logger.SetFormatter(&Formatter{
+	logger.SetFormatter(&formatter{
 		Config:  c.assignDefaults(),
 		Colours: false,
 	})

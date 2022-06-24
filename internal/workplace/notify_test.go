@@ -7,8 +7,8 @@ package workplace
 import (
 	"bytes"
 	"github.com/ainsleyclark/errors"
+	mocks "github.com/ainsleyclark/logger/gen/mocks/test"
 	"github.com/ainsleyclark/mogrus"
-	mocks "github.com/krang-backlink/logger/gen/mocks/test"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

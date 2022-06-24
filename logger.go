@@ -6,9 +6,9 @@ package logger
 
 import (
 	"context"
+	"github.com/ainsleyclark/logger/internal/stdout"
+	"github.com/ainsleyclark/logger/internal/workplace"
 	"github.com/ainsleyclark/mogrus"
-	"github.com/krang-backlink/logger/internal/stdout"
-	"github.com/krang-backlink/logger/internal/workplace"
 	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
@@ -126,7 +126,7 @@ var (
 func initialise(ctx context.Context, cfg *Config) error { //nolint
 	logger.SetLevel(logrus.TraceLevel)
 
-	logger.SetFormatter(&Formatter{
+	logger.SetFormatter(&formatter{
 		Config:          cfg,
 		TimestampFormat: "2006-01-02 15:04:05",
 		Colours:         true,
