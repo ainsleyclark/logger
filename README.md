@@ -10,6 +10,19 @@
 
 </div>
 
+# ✏️ Logger
+
+A Go wrapper for Logrus, Errors, Mongo and Facebook Workplace giving you extremely detailed log reports. This package is
+designed to be used with [github.com/ainsleyclark/errors](https://github.com/ainsleyclark/errors) for error reporting
+with codes, messages and more.
+
+## Overview
+
+- ✅ Log a wide variety of log levels.
+- ✅ Logs with custom errors featuring codes, messages and lifelines.
+- ✅ Facebook Workplace integration, any error marked as `INTERNAL` will be sent to WP.
+- ✅ Mongo integration, if specified log entries will be sent to a Mongo collection.
+
 ## Why?
 
 Detailed and verbose logging is important to any application or API. This package aims to make it easy for APIs to log errors to a central location, using a Logrus Hook.
