@@ -20,6 +20,7 @@ with codes, messages and more.
 
 - ✅ Log a wide variety of log levels.
 - ✅ Logs with custom errors featuring codes, messages and lifelines.
+- ✅ Beautiful middleware and formatters for entries (see screenshots below).
 - ✅ Facebook Workplace integration, any error marked as `INTERNAL` will be sent to WP.
 - ✅ Mongo integration, if specified log entries will be sent to a Mongo collection.
 
