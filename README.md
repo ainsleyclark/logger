@@ -14,6 +14,8 @@
 
 Detailed and verbose logging is important to any application or API. This package aims to make it easy for APIs to log errors to a central location, using a Logrus Hook.
 
+![Workplace](res/wp.png)
+
 ## Installation
 
 ```bash
