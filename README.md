@@ -17,18 +17,28 @@ go get -u github.com/krang-backlink/logger
 
 ## Basic Usage
 
-### Functions
 
-You can use any of the loggers methods to output leveled logs.
+### Quick Start
+
+![Logger Entries](res/entries.png)
 
 ```go
-logger.Trace("Trace Entry")
-logger.Debug("Debug Entry")
-logger.Info("Info Entry")
-logger.Warn("Warn Entry")
-logger.Error("Error Entry")
-logger.Fatal("Fatal Entry")
-logger.Panic("Panic Entry")
+func QuickStart() error {
+	err := logger.New(context.TODO(), logger.NewOptions().Service("service"))
+	if err != nil {
+		return err
+	}
+
+	logger.Trace("Trace Entry")
+	logger.Debug("Debug Entry")
+	logger.Info("Info Entry")
+	logger.Warn("Warn Entry")
+	logger.Error("Error Entry")
+	logger.WithError(errors.NewInternal(errors.New("error"), "message", "op")).Error()
+	logger.Fatal("Fatal Entry")
+
+	return nil
+}
 ```
 
 ### Fields

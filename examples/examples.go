@@ -5,21 +5,29 @@
 package examples
 
 import (
+	"context"
 	"github.com/ainsleyclark/errors"
 	"github.com/krang-backlink/logger"
 	"net/http"
 	"time"
 )
 
-// BasicUsage godoc
-func BasicUsage() {
+// QuickStart godoc
+func QuickStart() error {
+	err := logger.New(context.TODO(), logger.NewOptions().Service("service"))
+	if err != nil {
+		return err
+	}
+
 	logger.Trace("Trace Entry")
 	logger.Debug("Debug Entry")
 	logger.Info("Info Entry")
 	logger.Warn("Warn Entry")
 	logger.Error("Error Entry")
+	logger.WithError(errors.NewInternal(errors.New("error"), "message", "op")).Error()
 	logger.Fatal("Fatal Entry")
-	logger.Panic("Panic Entry")
+
+	return nil
 }
 
 // Fields allow you to log out key value pairs to the logger
@@ -42,10 +50,12 @@ func WithError() {
 // information and meta.
 func Middleware(r *http.Request) {
 	logger.Fire(logger.FireHook{
-		Request:      r,
-		Status:       http.StatusOK,
-		Message:      "Message from API",
-		Data:         map[string]any{},
+		Request: r,
+		Status:  http.StatusOK,
+		Message: "Message from API",
+		Data: map[string]any{
+			"key": "value",
+		},
 		RequestTime:  time.Now(),
 		ResponseTime: time.Now(),
 		Latency:      100,
