@@ -109,6 +109,7 @@ func Middleware(r *http.Request) {
 ## Recipes
 
 ### Simple
+
 Creates a simple logger with stdout.
 
 ```go
@@ -131,6 +132,9 @@ func Simple() error {
 
 ### WithWorkplace
 
+Create a logger with Facebook Workplace integration. A token and a thread are required to send any error code that has
+been marked as `errors.INTERNAL` to thread ID passed.
+
 ```go
 func WithWorkplace() error {
 	opts := logger.NewOptions().
@@ -149,6 +153,9 @@ func WithWorkplace() error {
 ```
 
 ### WithMongo
+
+Create a logger with Mongo integration. All logs are sent to the collection passed
+using [github.com/ainsleyclark/mogurs](https://github.com/ainsleyclark/mogurs).
 
 ```go
 func WithMongo() error {
@@ -177,6 +184,8 @@ func WithMongo() error {
 ```
 
 ### KitchenSink
+
+Boostrap all Log integrations.
 
 ```go
 func KitchenSink() error {

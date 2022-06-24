@@ -14,6 +14,8 @@ import (
 	"os"
 )
 
+// Simple godoc
+// Creates a simple logger with stdout.
 func Simple() error {
 	opts := logger.NewOptions().
 		Service("service").
@@ -30,6 +32,10 @@ func Simple() error {
 	return nil
 }
 
+// WithWorkplace godoc
+// Create a logger with Facebook Workplace integration. A token and a
+// thread are required to send any error code that has been marked
+// as `errors.INTERNAL` to thread ID passed.
 func WithWorkplace() error {
 	opts := logger.NewOptions().
 		Service("api").
@@ -45,6 +51,9 @@ func WithWorkplace() error {
 	return nil
 }
 
+// WithMongo godoc
+// Create a logger with Mongo integration. All logs are sent to the
+// collection passed.
 func WithMongo() error {
 	clientOptions := options.Client().
 		ApplyURI(os.Getenv("MONGO_CONNECTION")).
@@ -69,6 +78,8 @@ func WithMongo() error {
 	return nil
 }
 
+// KitchenSink godoc
+// Boostrap all Log integrations.
 func KitchenSink() error {
 	clientOptions := options.Client().
 		ApplyURI(os.Getenv("MONGO_CONNECTION")).
