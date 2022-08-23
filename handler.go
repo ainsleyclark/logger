@@ -50,9 +50,9 @@ func Fire(f FireHook) {
 	}
 
 	if f.Status >= 200 && f.Status < 300 {
-		logger.WithFields(fields).Info()
+		logger.WithFields(fields).Info(f.Message)
 		return
 	}
 
-	logger.WithFields(fields).Error()
+	logger.WithFields(fields).Error(f.Message)
 }
