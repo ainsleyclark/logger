@@ -118,15 +118,15 @@ func SetLogger(l *logrus.Logger) {
 
 // SetService replaces the service in the configuration and
 // creates a new logger.
-func SetService(service string) {
-	logger.ReplaceHooks(nil)
-	config.service = service
-	logger = logrus.New()
-	err := initialise(context.Background(), config)
-	if err != nil {
-		logger.Error(err)
-	}
-}
+//func SetService(service string) {
+//	config.service = service
+//	logger = logrus.New()
+//	color.Greenln(config)
+//	err := initialise(context.Background(), config)
+//	if err != nil {
+//		logger.Error(err)
+//	}
+//}
 
 var (
 	// newMogrus is an alias for mogrus.New

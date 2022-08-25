@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/ainsleyclark/errors v0.0.1
-	github.com/ainsleyclark/mogrus v0.0.3
+	github.com/ainsleyclark/mogrus v0.0.4
 	github.com/ainsleyclark/workplace v0.0.1
 	github.com/enescakir/emoji v1.0.0
 	github.com/gookit/color v1.5.1

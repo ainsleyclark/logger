@@ -203,20 +203,20 @@ func (t *LoggerTestSuite) TestSetLogger() {
 	t.Equal(l, logger)
 }
 
-func (t *LoggerTestSuite) TestSetService() {
-	orig := config
-	defer func() {
-		config = orig
-	}()
-
-	t.Run("Success", func() {
-		SetService("service")
-		t.Equal("service", config.service)
-	})
-
-	//t.Run("Error", func() {
-	//	buf := t.Setup()
-	//	SetService("")
-	//	color.Greenln(b)
-	//})
-}
+//func (t *LoggerTestSuite) TestSetService() {
+//
+//	t.Run("Success", func() {
+//		orig := config
+//		defer func() {
+//			config = orig
+//		}()
+//		SetService("service")
+//		t.Equal("service", config.service)
+//	})
+//
+//	//t.Run("Error", func() {
+//	//	buf := t.Setup()
+//	//	SetService("")
+//	//	color.Greenln(b)
+//	//})
+//}
