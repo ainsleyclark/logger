@@ -11,7 +11,6 @@ import (
 	"github.com/ainsleyclark/mogrus"
 	"github.com/sirupsen/logrus"
 	"io"
-	"io/ioutil"
 	"os"
 	"time"
 )
@@ -20,7 +19,7 @@ var (
 	// logger is an alias for the standard logger.
 	logger = logrus.New()
 	// Configuration is the current configuration for the logger.
-	config = &Config{}
+	config = &Config{} //nolint
 )
 
 type (
@@ -147,7 +146,7 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 	})
 
 	// Send all logs to nowhere by default.
-	logger.SetOutput(ioutil.Discard)
+	logger.SetOutput(io.Discard)
 
 	// Send logs with level higher than warning to stderr.
 	logger.AddHook(&stdout.Hook{
