@@ -19,6 +19,8 @@ import (
 var (
 	// logger is an alias for the standard logger.
 	logger = logrus.New()
+	// Configuration is the current configuration for the logger.
+	config = &Config{}
 )
 
 type (
@@ -114,6 +116,18 @@ func SetLogger(l *logrus.Logger) {
 	logger = l
 }
 
+// SetService replaces the service in the configuration and
+// creates a new logger.
+func SetService(service string) {
+	logger.ReplaceHooks(nil)
+	config.service = service
+	logger = logrus.New()
+	err := initialise(context.Background(), config)
+	if err != nil {
+		logger.Error(err)
+	}
+}
+
 var (
 	// newMogrus is an alias for mogrus.New
 	newMogrus = mogrus.New
@@ -165,6 +179,8 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 	if err != nil {
 		return err
 	}
+
+	config = cfg
 
 	return nil
 }
