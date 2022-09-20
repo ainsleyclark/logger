@@ -11,7 +11,6 @@ import (
 	"github.com/ainsleyclark/mogrus"
 	"github.com/sirupsen/logrus"
 	"io"
-	"io/ioutil"
 	"os"
 	"time"
 )
@@ -133,7 +132,7 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 	})
 
 	// Send all logs to nowhere by default.
-	logger.SetOutput(ioutil.Discard)
+	logger.SetOutput(io.Discard)
 
 	// Send logs with level higher than warning to stderr.
 	logger.AddHook(&stdout.Hook{

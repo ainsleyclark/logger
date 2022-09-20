@@ -26,7 +26,7 @@ credentials.md
 # System Files
 .DS_Store
 
-# Krang Specifc
+# Misc
 /.env
 /.env.test
 dist/*

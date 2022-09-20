@@ -26,10 +26,10 @@ type (
 const (
 	// DefaultPrefix is the default prefix used when none
 	// is set.
-	DefaultPrefix = "REDDICO"
+	DefaultPrefix = "LOGGER"
 	// DefaultStatus is the default status used when none
 	// is set.
-	DefaultStatus = "RED"
+	DefaultStatus = "LOG"
 )
 
 // Validate ensures the configuration is sanity checked

@@ -117,6 +117,20 @@ func TestHook_Process(t *testing.T) {
 	}
 }
 
+func TestHook_FormatMessage(t *testing.T) {
+	h := Hook{
+		options: Options{Prefix: "PREFIX", Version: "v0.1.1"},
+	}
+	entry := mogrus.Entry{
+		Level:   "info",
+		Message: "message",
+		Error:   &mogrus.Error{Code: errors.INTERNAL},
+	}
+	got := h.formatMessage(entry)
+	assert.Contains(t, got, "v0.1.1")
+	assert.Contains(t, got, "Prefix")
+}
+
 func TestHook_Levels(t *testing.T) {
 	h := Hook{LogLevels: logrus.AllLevels}
 	want := logrus.AllLevels

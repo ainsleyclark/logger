@@ -13,6 +13,7 @@ import (
 	"github.com/enescakir/emoji"
 	"github.com/sirupsen/logrus"
 	"log"
+	"strings"
 )
 
 // NewHook creates a new Workplace hook.
@@ -44,6 +45,7 @@ type (
 		Thread  string
 		Service string
 		Version string
+		Prefix  string
 	}
 )
 
@@ -84,11 +86,15 @@ func (hook *Hook) process(entry mogrus.Entry) {
 func (hook *Hook) formatMessage(entry mogrus.Entry) string {
 	buf := bytes.Buffer{}
 
-	// Write Krang & version from the latest build.
-	buf.WriteString(fmt.Sprintf("%v %s v%s\n", hook.options.Service, emoji.ChartIncreasing, hook.options.Version))
+	// Write version from the latest build.
+	buf.WriteString(fmt.Sprintf("%v %s", hook.options.Service, emoji.ChartIncreasing))
+	if hook.options.Version != "" {
+		buf.WriteString(fmt.Sprintf("v%s\n", strings.ReplaceAll(hook.options.Version, "v", "")))
+	}
 
 	// Write intro text.
-	buf.WriteString("\U0001FAE0 Error detected in Krang, please see the information below for more details.\n\n")
+	app := strings.Title(strings.ToLower(hook.options.Prefix)) //nolint
+	buf.WriteString(fmt.Sprintf("\U0001FAE0 Error detected in %s, please see the information below for more details.\n\n", app))
 
 	// Write log
 	buf.WriteString(fmt.Sprintf("%v Level: %s\n", emoji.RightArrow, entry.Level))
@@ -98,7 +104,7 @@ func (hook *Hook) formatMessage(entry mogrus.Entry) string {
 	}
 
 	// Print out the Entries error.
-	buf.WriteString(fmt.Sprintf("%v Code: %s\n", emoji.RightArrow, entry.Error.Code))
+	buf.WriteString(fmt.Sprintf("%v Code: %s\n", emoji.RightArrow, entry.Error.Code)) // TODO: Handle nil pointer, don't print if the err is nil.
 	buf.WriteString(fmt.Sprintf("%v Message: %s\n", emoji.RightArrow, entry.Error.Message))
 	buf.WriteString(fmt.Sprintf("%v Operation: %s\n", emoji.RightArrow, entry.Error.Operation))
 	buf.WriteString(fmt.Sprintf("%v Error: %s\n", emoji.RightArrow, entry.Error.Err))
