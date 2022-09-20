@@ -1,6 +1,15 @@
-// Copyright 2020 The Reddico Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// Copyright 2022 Ainsley Clark. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package logger
 
@@ -165,9 +174,9 @@ func (t *LoggerTestSuite) TestLogger() {
 func (t *LoggerTestSuite) TestLogger_Fatal() {
 	buf := t.Setup() // nolint
 	defer func() {
-		logger = logrus.New()
+		L = logrus.New()
 	}()
-	logger.ExitFunc = func(i int) {}
+	L.ExitFunc = func(i int) {}
 	Fatal("fatal")
 	t.Contains(buf.String(), "fatal")
 }
@@ -183,24 +192,24 @@ func (t *LoggerTestSuite) TestLogger_Panic() {
 func (t *LoggerTestSuite) TestLogger_SetOutput() {
 	buf := &bytes.Buffer{}
 	SetOutput(buf)
-	t.Equal(buf, logger.Out)
+	t.Equal(buf, L.Out)
 }
 
 func (t *LoggerTestSuite) TestSetLevel() {
 	defer func() {
-		logger = logrus.New()
+		L = logrus.New()
 	}()
 	SetLevel(logrus.WarnLevel)
-	t.Equal(logrus.WarnLevel, logger.GetLevel())
+	t.Equal(logrus.WarnLevel, L.GetLevel())
 }
 
 func (t *LoggerTestSuite) TestSetLogger() {
 	defer func() {
-		logger = logrus.New()
+		L = logrus.New()
 	}()
-	l := logger
+	l := L
 	SetLogger(l)
-	t.Equal(l, logger)
+	t.Equal(l, L)
 }
 
 //func (t *LoggerTestSuite) TestSetService() {
