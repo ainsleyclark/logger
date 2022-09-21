@@ -25,8 +25,6 @@ import (
 var (
 	// L is an alias for the standard logrus Logger.
 	L = logrus.New()
-	// Configuration is the current configuration for the logger.
-	config = &Config{} //nolint
 )
 
 // New creates a new standard L and sets logging levels
@@ -155,8 +153,6 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 	if err != nil {
 		return err
 	}
-
-	config = cfg
 
 	return nil
 }
