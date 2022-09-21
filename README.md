@@ -153,7 +153,7 @@ func WithWorkplace() error {
 }
 ```
 
-### Workplace CallBack
+#### Workplace CallBack
 You can pass a function to `WithWorkplaceNotifier` as the second argument which is a callback function to determine if
 the message should be sent to a thread, an example is below:
 
@@ -175,7 +175,7 @@ func WithWorkplaceReport() {
 }
 ```
 
-### Workplace Formatter
+#### Workplace Formatter
 You can pass a function to `WithWorkplaceNotifier` as the third argument which is a callback function to write the
 message to Workplace. This is where you can customise the message easily and return a formatted string.
 
