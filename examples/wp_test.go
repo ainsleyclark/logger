@@ -15,20 +15,37 @@ package examples
 
 import (
 	"context"
+	"fmt"
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/logger"
+	"github.com/ainsleyclark/logger/types"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
 	"testing"
+	"time"
 )
 
 func Test(t *testing.T) {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	opts := logger.NewOptions().
 		Service("api").
-		WithWorkplaceNotifier("token", "thread")
+		WithWorkplaceNotifier(os.Getenv("WORKPLACE_TOKEN"), os.Getenv("WORKPLACE_TOKEN")).
+		WithShouldReportFunc(func(e types.Entry) bool {
+			fmt.Println(e)
+			return true
+		})
 
-	err := logger.New(context.Background(), opts)
+	err = logger.New(context.Background(), opts)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	logger.WithError(errors.NewInternal(errors.New("error"), "message", "op")).Error()
+
+	time.Sleep(time.Second * 3)
 }

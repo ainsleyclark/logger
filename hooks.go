@@ -15,6 +15,7 @@ package logger
 
 import (
 	"context"
+	"fmt"
 	"github.com/ainsleyclark/logger/internal/workplace"
 	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/mogrus"
@@ -70,6 +71,7 @@ type defaultHook struct {
 // entry to string and write it to
 // appropriate writer
 func (hook *defaultHook) Fire(entry *logrus.Entry) error {
+	fmt.Println("innn")
 	if entry == nil {
 		return nil
 	}
