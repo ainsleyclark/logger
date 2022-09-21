@@ -16,8 +16,10 @@ package logger
 import (
 	"context"
 	"github.com/ainsleyclark/logger/internal/workplace"
+	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/mogrus"
 	"github.com/sirupsen/logrus"
+	"sync"
 	"time"
 )
 
@@ -26,48 +28,103 @@ var (
 	newMogrus = mogrus.New
 	// newWP is an alias for notify.NewFireHook
 	newWP = workplace.NewHook
+	mtx   = sync.Mutex{}
+)
+
+type (
+	// fireFunc is an alias for firing a logger entry.
+	fireFunc func(*logrus.Entry) error
 )
 
 // addHooks adds all hooks to the logger.
 func addHooks(ctx context.Context, cfg *Config) error {
-	err := addWorkplaceHook(cfg)
+	d := &defaultHook{
+		config: cfg,
+	}
+
+	err := d.addWorkplaceHook()
 	if err != nil {
 		return err
 	}
 
-	err = addMogrusHook(ctx, cfg)
+	err = d.addMogrusHook(ctx)
 	if err != nil {
 		return err
 	}
+
+	L.AddHook(d)
 
 	return nil
 }
 
+// defaultHook is the default hook for processing logger entries.
+type defaultHook struct {
+	levels []logrus.Level
+	config *Config
+	wp     fireFunc
+	mogrus fireFunc
+}
+
+// Fire will be called when some logging function is
+// called with current hook. It will format log
+// entry to string and write it to
+// appropriate writer
+func (hook *defaultHook) Fire(entry *logrus.Entry) error {
+	if entry == nil {
+		return nil
+	}
+	if !hook.config.report(types.Entry(*entry)) {
+		return nil
+	}
+	if hook.wp != nil {
+		err := hook.wp(entry)
+		if err != nil {
+			return err
+		}
+	}
+	if hook.mogrus != nil {
+		go func(fire fireFunc) {
+			mtx.Lock()
+			err := fire(entry)
+			if err != nil {
+				L.WithError(err).Error()
+			}
+			mtx.Unlock()
+		}(hook.mogrus)
+	}
+	return nil
+}
+
+// Levels Define on which log levels this hook would
+// trigger.
+func (hook *defaultHook) Levels() []logrus.Level {
+	return hook.levels
+}
+
 // addWorkplaceHook adds the Workplace hook if
 // the thread and token exists.
-func addWorkplaceHook(cfg *Config) error {
-	if cfg.workplaceThread != "" && cfg.workplaceToken != "" {
+func (hook *defaultHook) addWorkplaceHook() error {
+	if hook.config.workplaceThread != "" && hook.config.workplaceToken != "" {
 		wpHook, err := newWP(workplace.Options{
-			Token:        cfg.workplaceToken,
-			Thread:       cfg.workplaceThread,
-			Service:      cfg.service,
-			Version:      cfg.version,
-			ShouldReport: cfg.report,
+			Token:   hook.config.workplaceToken,
+			Thread:  hook.config.workplaceThread,
+			Service: hook.config.service,
+			Version: hook.config.version,
 		})
 		if err != nil {
 			return err
 		}
-		L.AddHook(wpHook)
+		hook.wp = wpHook.Fire
 	}
 	return nil
 }
 
 // addMogrusHook adds the Mogrus hook if
 // the client exists.
-func addMogrusHook(ctx context.Context, cfg *Config) error {
-	if cfg.mongoCollection != nil {
+func (hook *defaultHook) addMogrusHook(ctx context.Context) error {
+	if hook.config.mongoCollection != nil {
 		mogrusHook, err := newMogrus(ctx, mogrus.Options{
-			Collection: cfg.mongoCollection,
+			Collection: hook.config.mongoCollection,
 			ExpirationLevels: mogrus.ExpirationLevels{
 				logrus.TraceLevel: time.Hour * 24,
 				logrus.DebugLevel: time.Hour * 24,
@@ -81,7 +138,7 @@ func addMogrusHook(ctx context.Context, cfg *Config) error {
 		if err != nil {
 			return err
 		}
-		L.AddHook(mogrusHook)
+		hook.mogrus = mogrusHook.Fire
 	}
 	return nil
 }

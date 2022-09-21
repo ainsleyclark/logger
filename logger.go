@@ -83,7 +83,7 @@ func Panic(args ...any) {
 // WithField logs with field, sets a new map containing
 // "fields".
 func WithField(key string, value any) *logrus.Entry {
-	return L.WithFields(logrus.Fields{"fields": logrus.Fields{
+	return L.WithFields(logrus.Fields{types.FieldKey: logrus.Fields{
 		key: value,
 	}})
 }
@@ -91,7 +91,7 @@ func WithField(key string, value any) *logrus.Entry {
 // WithFields logs with fields, sets a new map containing
 // "fields".
 func WithFields(fields types.Fields) *logrus.Entry {
-	return L.WithFields(logrus.Fields{"fields": fields})
+	return L.WithFields(logrus.Fields{types.FieldKey: fields})
 }
 
 // WithError - Logs with a custom error.

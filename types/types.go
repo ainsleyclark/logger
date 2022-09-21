@@ -13,7 +13,9 @@
 
 package types
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/sirupsen/logrus"
+)
 
 type (
 	// Fields is an alias for logrus.Fields.
@@ -24,6 +26,12 @@ type (
 	// ShouldReportFunc is the function used to determine if a
 	// logger entry should be sent to a hook.
 	ShouldReportFunc func(e Entry) bool
+)
+
+const (
+	// FieldKey is the default key for saving fields
+	// to the logger.
+	FieldKey = "fields"
 )
 
 var (
@@ -41,7 +49,7 @@ func (e Entry) ToLogrusEntry() logrus.Entry {
 
 // IsHTTP returns true if the fields contain HTTP
 // key and value pairs.
-func (e *Entry) IsHTTP() bool {
+func (e Entry) IsHTTP() bool {
 	_, status := e.Data["status_code"]
 	_, ip := e.Data["client_ip"]
 	_, url := e.Data["request_url"]
@@ -51,6 +59,31 @@ func (e *Entry) IsHTTP() bool {
 	return false
 }
 
-func (e *Entry) HasError() {
+//func (e Entry) Fields() Fields {
+//	fields, ok := e.Data[FieldKey]
+//	if !ok {
+//		return nil
+//	}
+//	return Fields(fields)
+//}
 
+// HasError determines if an error is attached to
+// the entry.
+func (e Entry) HasError() bool {
+	err, ok := e.Data[logrus.ErrorKey]
+	if !ok {
+		return false
+	}
+	if err == nil {
+		return false
+	}
+	return true
 }
+
+//func (e Entry) Error() error {
+//	err, ok := e.Data[logrus.ErrorKey]
+//	if !ok {8=
+//		return nil
+//	}
+//	return err
+//}

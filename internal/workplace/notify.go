@@ -17,7 +17,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/ainsleyclark/errors"
-	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/mogrus"
 	"github.com/ainsleyclark/workplace"
 	"github.com/enescakir/emoji"
@@ -51,12 +50,11 @@ type (
 	// Options defines the configuration needed to fire logs
 	// via the Workplace API.
 	Options struct {
-		Token        string
-		Thread       string
-		Service      string
-		Version      string
-		Prefix       string
-		ShouldReport types.ShouldReportFunc
+		Token   string
+		Thread  string
+		Service string
+		Version string
+		Prefix  string
 	}
 	FormatMessageFunc func(entry logrus.Entry)
 )
@@ -66,12 +64,6 @@ type (
 // entry to string and write it to
 // appropriate writer
 func (hook *Hook) Fire(entry *logrus.Entry) error {
-	if entry == nil {
-		return nil
-	}
-	if !hook.options.ShouldReport(types.Entry(*entry)) {
-		return nil
-	}
 	go hook.process(mogrus.ToEntry(entry))
 	return nil
 }

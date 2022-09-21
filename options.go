@@ -14,7 +14,6 @@
 package logger
 
 import (
-	"fmt"
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/logger/types"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -71,7 +70,6 @@ func (c *Config) assignDefaults() *Config {
 	if c.report == nil {
 		c.report = types.DefaultReportFn
 	}
-	fmt.Println(c.report)
 	return c
 }
 

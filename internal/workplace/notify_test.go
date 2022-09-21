@@ -17,7 +17,6 @@ import (
 	"bytes"
 	"github.com/ainsleyclark/errors"
 	mocks "github.com/ainsleyclark/logger/gen/mocks/test"
-	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/mogrus"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -54,39 +53,9 @@ func TestNewHook(t *testing.T) {
 }
 
 func TestHook_Fire(t *testing.T) {
-	tt := map[string]struct {
-		input *logrus.Entry
-		hook  Hook
-	}{
-		"Nil": {
-			nil,
-			Hook{},
-		},
-		"Shouldn't Report": {
-			nil,
-			Hook{options: Options{
-				ShouldReport: func(e types.Entry) bool {
-					return false
-				},
-			}},
-		},
-		"Should Report": {
-			nil,
-			Hook{options: Options{
-				ShouldReport: func(e types.Entry) bool {
-					return true
-				},
-			}},
-		},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			got := test.hook.Fire(test.input)
-			assert.Nil(t, got)
-		})
-	}
-
+	h := Hook{}
+	got := h.Fire(&logrus.Entry{})
+	assert.Nil(t, got)
 }
 
 func TestHook_Process(t *testing.T) {

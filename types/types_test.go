@@ -14,6 +14,7 @@
 package types
 
 import (
+	"github.com/ainsleyclark/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -55,6 +56,41 @@ func TestEntry_IsHTTP(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			got := test.input.IsHTTP()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestEntry_HasError(t *testing.T) {
+	tt := map[string]struct {
+		input Entry
+		want  bool
+	}{
+		"Nil": {
+			Entry{},
+			false,
+		},
+		"No Error": {
+			Entry{
+				Data: map[string]any{
+					logrus.ErrorKey: nil,
+				},
+			},
+			false,
+		},
+		"With Error": {
+			Entry{
+				Data: map[string]any{
+					logrus.ErrorKey: errors.New("error"),
+				},
+			},
+			true,
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			got := test.input.HasError()
 			assert.Equal(t, test.want, got)
 		})
 	}
