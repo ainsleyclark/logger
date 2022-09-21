@@ -16,8 +16,7 @@ package workplace
 import (
 	"bytes"
 	"fmt"
-	"github.com/ainsleyclark/errors"
-	"github.com/ainsleyclark/mogrus"
+	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/workplace"
 	"github.com/enescakir/emoji"
 	"github.com/sirupsen/logrus"
@@ -50,13 +49,13 @@ type (
 	// Options defines the configuration needed to fire logs
 	// via the Workplace API.
 	Options struct {
-		Token   string
-		Thread  string
-		Service string
-		Version string
-		Prefix  string
+		Token         string
+		Thread        string
+		Service       string
+		Version       string
+		Prefix        string
+		FormatMessage types.FormatMessageFunc
 	}
-	FormatMessageFunc func(entry logrus.Entry)
 )
 
 // Fire will be called when some logging function is
@@ -64,46 +63,52 @@ type (
 // entry to string and write it to
 // appropriate writer
 func (hook *Hook) Fire(entry *logrus.Entry) error {
-	go hook.process(mogrus.ToEntry(entry))
+	go hook.process(types.Entry(*entry)) // This is already check for nil pointer.
 	return nil
 }
 
-func (hook *Hook) process(entry mogrus.Entry) {
-	// Bail if the error is nil.
-	if entry.Error == nil {
-		return
-	}
+func (hook *Hook) process(entry types.Entry) {
+	// Setup args for formatting the message.
+	var (
+		message = "" //nolint
+		args    = types.FormatMessageArgs{
+			Service: hook.options.Service,
+			Version: hook.options.Version,
+			Prefix:  hook.options.Prefix,
+		}
+	)
 
-	// Bail if the error code is not anything but INTERNAL,
-	// we don't want to notify users of invalid or pesky
-	// log entries.
-	if entry.Error.Code != errors.INTERNAL {
-		return
+	// Use the default format message if none is attached,
+	// otherwise call the function that is assigned.
+	if hook.options.FormatMessage == nil {
+		message = FormatMessage(entry, args)
+	} else {
+		message = hook.options.FormatMessage(entry, args)
 	}
 
 	// Use the Workplace client to send a message via the bot.
 	err := hook.wp.Notify(workplace.Transmission{
 		Thread:  hook.options.Thread,
-		Message: hook.formatMessage(entry),
+		Message: message,
 	})
 	if err != nil {
 		log.Println(err.Error()) // We can't use the standard logger as it may cause a loop.
 	}
 }
 
-// formatMessage prints a formatted message from the log entry to
+// FormatMessage prints a formatted message from the log entry to
 // a user friendly message.
-func (hook *Hook) formatMessage(entry mogrus.Entry) string {
+func FormatMessage(entry types.Entry, args types.FormatMessageArgs) string {
 	buf := bytes.Buffer{}
 
 	// Write version from the latest build.
-	buf.WriteString(fmt.Sprintf("%v %s", hook.options.Service, emoji.ChartIncreasing))
-	if hook.options.Version != "" {
-		buf.WriteString(fmt.Sprintf("v%s\n", strings.ReplaceAll(hook.options.Version, "v", "")))
+	buf.WriteString(fmt.Sprintf("%v %s", args.Service, emoji.ChartIncreasing))
+	if args.Version != "" {
+		buf.WriteString(fmt.Sprintf("v%s\n", strings.ReplaceAll(args.Version, "v", "")))
 	}
 
 	// Write intro text.
-	app := strings.Title(strings.ToLower(hook.options.Prefix)) //nolint
+	app := strings.Title(strings.ToLower(args.Prefix)) //nolint
 	buf.WriteString(fmt.Sprintf("\U0001FAE0 Error detected in %s, please see the information below for more details.\n\n", app))
 
 	// Write log
@@ -114,11 +119,14 @@ func (hook *Hook) formatMessage(entry mogrus.Entry) string {
 	}
 
 	// Print out the Entries error.
-	buf.WriteString(fmt.Sprintf("%v Code: %s\n", emoji.RightArrow, entry.Error.Code)) // TODO: Handle nil pointer, don't print if the err is nil.
-	buf.WriteString(fmt.Sprintf("%v Message: %s\n", emoji.RightArrow, entry.Error.Message))
-	buf.WriteString(fmt.Sprintf("%v Operation: %s\n", emoji.RightArrow, entry.Error.Operation))
-	buf.WriteString(fmt.Sprintf("%v Error: %s\n", emoji.RightArrow, entry.Error.Err))
-	buf.WriteString(fmt.Sprintf("%v Fileline: %s\n\n", emoji.RightArrow, entry.Error.FileLine))
+	e := entry.Error()
+	if e != nil {
+		buf.WriteString(fmt.Sprintf("%v Code: %s\n", emoji.RightArrow, e.Code))
+		buf.WriteString(fmt.Sprintf("%v Message: %s\n", emoji.RightArrow, e.Message))
+		buf.WriteString(fmt.Sprintf("%v Operation: %s\n", emoji.RightArrow, e.Operation))
+		buf.WriteString(fmt.Sprintf("%v Error: %s\n", emoji.RightArrow, e.Err))
+		buf.WriteString(fmt.Sprintf("%v Fileline: %s\n\n", emoji.RightArrow, e.FileLine()))
+	}
 
 	// Print out associated data.
 	if len(entry.Data) > 0 {

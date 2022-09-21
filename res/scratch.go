@@ -42,3 +42,15 @@ package res
 //	//	color.Greenln(b)
 //	//})
 //}
+
+//// Bail if the error is nil.
+//if entry.Error == nil {
+//	return
+//}
+//
+//// Bail if the error code is not anything but INTERNAL,
+//// we don't want to notify users of invalid or pesky
+//// log entries.
+//if entry.Error.Code != errors.INTERNAL {
+//	return
+//}

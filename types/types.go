@@ -27,6 +27,16 @@ type (
 	// ShouldReportFunc is the function used to determine if a
 	// logger entry should be sent to a hook.
 	ShouldReportFunc func(e Entry) bool
+	// FormatMessageFunc is the function used for formatting
+	// messages to send to chat channels/threads.
+	FormatMessageFunc func(entry Entry, args FormatMessageArgs) string
+	// FormatMessageArgs represents the data for formatting log
+	// message.
+	FormatMessageArgs struct {
+		Service string
+		Version string
+		Prefix  string
+	}
 )
 
 const (

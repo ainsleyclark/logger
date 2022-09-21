@@ -17,7 +17,7 @@ import (
 	"bytes"
 	"github.com/ainsleyclark/errors"
 	mocks "github.com/ainsleyclark/logger/gen/mocks/test"
-	"github.com/ainsleyclark/mogrus"
+	"github.com/ainsleyclark/logger/types"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -53,26 +53,28 @@ func TestNewHook(t *testing.T) {
 }
 
 func TestHook_Fire(t *testing.T) {
-	h := Hook{}
+	m := &mocks.Notifier{}
+	m.On("Notify", mock.Anything, mock.Anything).
+		Return(nil)
+	h := Hook{wp: m}
 	got := h.Fire(&logrus.Entry{})
 	assert.Nil(t, got)
 }
 
 func TestHook_Process(t *testing.T) {
-	entry := mogrus.Entry{
-		Level:   "info",
+	entry := types.Entry{
 		Message: "message",
 		Data: map[string]any{
 			"key":           "value",
 			logrus.ErrorKey: "value",
 		},
-		Error: &mogrus.Error{Code: errors.INTERNAL},
 	}
 
 	tt := map[string]struct {
-		input mogrus.Entry
-		mock  func(m *mocks.Notifier)
-		want  any
+		input     types.Entry
+		mock      func(m *mocks.Notifier)
+		formatter types.FormatMessageFunc
+		want      any
 	}{
 		"Success": {
 			entry,
@@ -80,16 +82,18 @@ func TestHook_Process(t *testing.T) {
 				m.On("Notify", mock.Anything, mock.Anything).
 					Return(nil)
 			},
-			"",
-		},
-		"Nil Error": {
-			mogrus.Entry{Level: "info", Message: "message"},
 			nil,
 			"",
 		},
-		"Not Internal": {
-			mogrus.Entry{Level: "info", Message: "message", Error: &mogrus.Error{Code: errors.INVALID}},
-			nil,
+		"With Format": {
+			entry,
+			func(m *mocks.Notifier) {
+				m.On("Notify", mock.Anything, mock.Anything).
+					Return(nil)
+			},
+			func(entry types.Entry, args types.FormatMessageArgs) string {
+				return "hello"
+			},
 			"",
 		},
 		"Error": {
@@ -98,6 +102,7 @@ func TestHook_Process(t *testing.T) {
 				m.On("Notify", mock.Anything, mock.Anything).
 					Return(errors.New("error"))
 			},
+			nil,
 			"error",
 		},
 	}
@@ -115,27 +120,24 @@ func TestHook_Process(t *testing.T) {
 			}
 			h := Hook{
 				wp:        m,
-				options:   Options{},
+				options:   Options{FormatMessage: test.formatter},
 				LogLevels: logrus.AllLevels,
 			}
-
 			h.process(test.input)
-
 			assert.Contains(t, buf.String(), test.want)
 		})
 	}
 }
 
 func TestHook_FormatMessage(t *testing.T) {
-	h := Hook{
-		options: Options{Prefix: "PREFIX", Version: "v0.1.1"},
-	}
-	entry := mogrus.Entry{
-		Level:   "info",
+	entry := types.Entry{
 		Message: "message",
-		Error:   &mogrus.Error{Code: errors.INTERNAL},
 	}
-	got := h.formatMessage(entry)
+	got := FormatMessage(entry, types.FormatMessageArgs{
+		Service: "Service",
+		Version: "v0.1.1",
+		Prefix:  "PREFIX",
+	})
 	assert.Contains(t, got, "v0.1.1")
 	assert.Contains(t, got, "Prefix")
 }
