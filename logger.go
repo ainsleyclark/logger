@@ -28,13 +28,19 @@ var (
 	L = logrus.New()
 	// Configuration is the current configuration for the logger.
 	config = &Config{} //nolint
+	// defaultReportFn is the default report function when
+	// none is passed to the constructor.
+	defaultReportFn = func(e *Entry) bool {
+		return true
+	}
 )
 
 type (
 	// Fields is an alias for logrus.Fields.
 	Fields = logrus.Fields
-	// Entry defines the data sent to Mongo and Workplace.
-	Entry = mogrus.Entry
+	// ShouldReportFunc is the function used to determine if a
+	// logger entry should be sent to a hook.
+	ShouldReportFunc func(e *Entry) bool
 )
 
 // New creates a new standard L and sets logging levels
@@ -98,7 +104,7 @@ func WithField(key string, value any) *logrus.Entry {
 
 // WithFields logs with fields, sets a new map containing
 // "fields".
-func WithFields(fields logrus.Fields) *logrus.Entry {
+func WithFields(fields Fields) *logrus.Entry {
 	return L.WithFields(logrus.Fields{"fields": fields})
 }
 

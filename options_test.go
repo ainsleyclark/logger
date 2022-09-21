@@ -77,6 +77,7 @@ func (t *LoggerTestSuite) TestOptions() {
 		Version("v0.0.1").
 		DefaultStatus("status").
 		Prefix("prefix").
+		WithShouldReportFunc(defaultReportFn).
 		WithMongoCollection(&mongo.Collection{}).
 		WithWorkplaceNotifier("token", "thread")
 
@@ -91,4 +92,5 @@ func (t *LoggerTestSuite) TestOptions() {
 	t.Equal("prefix", c.prefix)
 	t.Equal("token", c.workplaceToken)
 	t.Equal("thread", c.workplaceThread)
+	t.NotNil(c.report)
 }

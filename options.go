@@ -29,6 +29,7 @@ type (
 		mongoCollection *mongo.Collection
 		workplaceToken  string
 		workplaceThread string
+		report          ShouldReportFunc
 	}
 )
 
@@ -114,6 +115,15 @@ func (op *Options) DefaultStatus(status string) *Options {
 func (op *Options) Service(service string) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.service = service
+	})
+	return op
+}
+
+// WithShouldReportFunc is called within a hook to determine if a entry
+// should be fired.
+func (op *Options) WithShouldReportFunc(fn ShouldReportFunc) *Options {
+	op.optFuncs = append(op.optFuncs, func(config *Config) {
+		config.report = fn
 	})
 	return op
 }

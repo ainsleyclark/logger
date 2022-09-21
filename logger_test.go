@@ -150,7 +150,7 @@ func (t *LoggerTestSuite) TestLogger() {
 		},
 		"With Fields": {
 			func() {
-				WithFields(logrus.Fields{"test": "with-fields"}).Error()
+				WithFields(Fields{"test": "with-fields"}).Error()
 			},
 			"with-fields",
 		},
@@ -201,6 +201,11 @@ func (t *LoggerTestSuite) TestSetLevel() {
 	}()
 	SetLevel(logrus.WarnLevel)
 	t.Equal(logrus.WarnLevel, L.GetLevel())
+}
+
+func (t *LoggerTestSuite) TestDefaultReportFn() {
+	got := defaultReportFn(nil)
+	t.Equal(true, got)
 }
 
 func (t *LoggerTestSuite) TestSetLogger() {
