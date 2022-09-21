@@ -61,6 +61,43 @@ func TestEntry_IsHTTP(t *testing.T) {
 	}
 }
 
+func TestEntry_Fields(t *testing.T) {
+	var empty logrus.Fields
+
+	tt := map[string]struct {
+		input Entry
+		want  any
+	}{
+		"Nil": {
+			Entry{},
+			empty,
+		},
+		"Bad Cast": {
+			Entry{
+				Data: map[string]any{
+					FieldKey: errors.New("error"),
+				},
+			},
+			empty,
+		},
+		"OK": {
+			Entry{
+				Data: map[string]any{
+					FieldKey: map[string]any{"test": "hello"},
+				},
+			},
+			Fields{"test": "hello"},
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			got := test.input.Fields()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestEntry_HasError(t *testing.T) {
 	tt := map[string]struct {
 		input Entry
@@ -91,6 +128,39 @@ func TestEntry_HasError(t *testing.T) {
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
 			got := test.input.HasError()
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestEntry_Error(t *testing.T) {
+	var empty *errors.Error
+
+	tt := map[string]struct {
+		input Entry
+		want  any
+	}{
+		"Nil": {
+			Entry{},
+			empty,
+		},
+		"With Error": {
+			Entry{
+				Data: map[string]any{
+					logrus.ErrorKey: errors.New("error"),
+				},
+			},
+			"error",
+		},
+	}
+
+	for name, test := range tt {
+		t.Run(name, func(t *testing.T) {
+			got := test.input.Error()
+			if got != nil {
+				assert.Contains(t, got.Error(), test.want)
+				return
+			}
 			assert.Equal(t, test.want, got)
 		})
 	}

@@ -14,6 +14,7 @@
 package types
 
 import (
+	"github.com/ainsleyclark/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -59,13 +60,19 @@ func (e Entry) IsHTTP() bool {
 	return false
 }
 
-//func (e Entry) Fields() Fields {
-//	fields, ok := e.Data[FieldKey]
-//	if !ok {
-//		return nil
-//	}
-//	return Fields(fields)
-//}
+// Fields obtains the entries Fields if it exists,
+// otherwise it returns nil.
+func (e Entry) Fields() Fields {
+	in, ok := e.Data[FieldKey]
+	if !ok {
+		return nil
+	}
+	fields, ok := in.(map[string]any)
+	if !ok {
+		return nil
+	}
+	return fields
+}
 
 // HasError determines if an error is attached to
 // the entry.
@@ -80,10 +87,12 @@ func (e Entry) HasError() bool {
 	return true
 }
 
-//func (e Entry) Error() error {
-//	err, ok := e.Data[logrus.ErrorKey]
-//	if !ok {8=
-//		return nil
-//	}
-//	return err
-//}
+// Error returns a formatted error if one exists within the
+// entry, otherwise returns nil.
+func (e Entry) Error() *errors.Error {
+	err, ok := e.Data[logrus.ErrorKey]
+	if !ok {
+		return nil
+	}
+	return errors.ToError(err)
+}
