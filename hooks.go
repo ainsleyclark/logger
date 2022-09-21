@@ -76,7 +76,7 @@ func (hook *defaultHook) Fire(entry *logrus.Entry) error {
 		if hook.config.workplaceReport(types.Entry(*entry)) {
 			err := hook.wp(entry)
 			if err != nil {
-				L.WithError(err).Error() // Don't return, still processing to do.
+				L.WithError(err).Error() // Don't return, still have processing to do.
 			}
 		}
 	}

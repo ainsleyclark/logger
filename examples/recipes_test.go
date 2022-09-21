@@ -17,6 +17,7 @@ import (
 	"context"
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/logger"
+	"github.com/ainsleyclark/logger/types"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -58,6 +59,44 @@ func WithWorkplace() error {
 	logger.WithError(errors.NewInternal(errors.New("error"), "message", "op")).Error()
 
 	return nil
+}
+
+// WithWorkplace godoc
+// You can pass a function to `WithWorkplaceNotifier` as the second argument
+// which is a callback function to determine if the message should be
+// sent to a thread, an example is below.
+func WithWorkplaceReport() {
+	// Don't send the message to workplace if there is no error.
+	workplaceCallBack := func(entry types.Entry) bool {
+		if !entry.HasError() {
+			return false
+		}
+		return true
+	}
+
+	_ = logger.NewOptions().
+		Service("api").
+		WithWorkplaceNotifier("token", "thread", workplaceCallBack, nil)
+
+	// etc
+}
+
+// WithWorkplaceFormatter godoc
+// You can pass a function to `WithWorkplaceNotifier` as the third argument
+// which is a callback function to write the message to Workplace.
+// This is where you can customise the message easily and return
+// a formatted string.
+func WithWorkplaceFormatter() {
+	// Don't send the message to workplace if there is no error.
+	workplaceFormatter := func(entry types.Entry, args types.FormatMessageArgs) string {
+		return args.Version + " " + " hello from Workplace!"
+	}
+
+	_ = logger.NewOptions().
+		Service("api").
+		WithWorkplaceNotifier("token", "thread", nil, workplaceFormatter)
+
+	// etc
 }
 
 // WithMongo godoc

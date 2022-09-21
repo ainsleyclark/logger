@@ -71,7 +71,7 @@ logger is simply the package-level exported logger.
 
 ```go
 func Fields() {
-	logger.WithFields(logger.Fields{
+	logger.WithFields(types.Fields{
 		"animal": "walrus",
 	}).Info("A walrus appears")
 }
@@ -140,7 +140,7 @@ been marked as `errors.INTERNAL` to thread ID passed.
 func WithWorkplace() error {
 	opts := logger.NewOptions().
 		Service("api").
-		WithWorkplaceNotifier("token", "thread")
+		WithWorkplaceNotifier("token", "thread", nil, nil)
 
 	err := logger.New(context.Background(), opts)
 	if err != nil {
@@ -150,6 +150,50 @@ func WithWorkplace() error {
 	logger.Info("Hello from Logger!")
 
 	return nil
+}
+```
+
+### Workplace CallBack
+You can pass a function to `WithWorkplaceNotifier` as the second argument which is a callback function to determine if
+the message should be sent to a thread, an example is below:
+
+```go
+func WithWorkplaceReport() {
+	// Don't send the message to workplace if there is no error.
+	workplaceCallBack := func(entry types.Entry) bool {
+		if !entry.HasError() {
+			return false
+		}
+		return true
+	}
+
+	_ = logger.NewOptions().
+	Service("api").
+	WithWorkplaceNotifier("token", "thread", workplaceCallBack, nil)
+
+	// etc
+}
+```
+
+### Workplace Formatter
+You can pass a function to `WithWorkplaceNotifier` as the third argument which is a callback function to write the
+message to Workplace. This is where you can customise the message easily and return a formatted string.
+
+```go
+func WithWorkplaceReport() {
+	// Don't send the message to workplace if there is no error.
+	workplaceCallBack := func(entry types.Entry) bool {
+		if !entry.HasError() {
+			return false
+		}
+		return true
+	}
+
+	_ = logger.NewOptions().
+	Service("api").
+	WithWorkplaceNotifier("token", "thread", workplaceCallBack, nil)
+
+	// etc
 }
 ```
 
