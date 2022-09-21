@@ -14,14 +14,10 @@
 package workplace
 
 import (
-	"bytes"
-	"fmt"
 	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/workplace"
-	"github.com/enescakir/emoji"
 	"github.com/sirupsen/logrus"
 	"log"
-	"strings"
 )
 
 // NewHook creates a new Workplace hook.
@@ -81,7 +77,7 @@ func (hook *Hook) process(entry types.Entry) {
 	// Use the default format message if none is attached,
 	// otherwise call the function that is assigned.
 	if hook.options.FormatMessage == nil {
-		message = FormatMessage(entry, args)
+		message = types.DefaultFormatMessageFn(entry, args)
 	} else {
 		message = hook.options.FormatMessage(entry, args)
 	}
@@ -94,52 +90,6 @@ func (hook *Hook) process(entry types.Entry) {
 	if err != nil {
 		log.Println(err.Error()) // We can't use the standard logger as it may cause a loop.
 	}
-}
-
-// FormatMessage prints a formatted message from the log entry to
-// a user friendly message.
-func FormatMessage(entry types.Entry, args types.FormatMessageArgs) string {
-	buf := bytes.Buffer{}
-
-	// Write version from the latest build.
-	buf.WriteString(fmt.Sprintf("%v %s", args.Service, emoji.ChartIncreasing))
-	if args.Version != "" {
-		buf.WriteString(fmt.Sprintf("v%s\n", strings.ReplaceAll(args.Version, "v", "")))
-	}
-
-	// Write intro text.
-	app := strings.Title(strings.ToLower(args.Prefix)) //nolint
-	buf.WriteString(fmt.Sprintf("\U0001FAE0 Error detected in %s, please see the information below for more details.\n\n", app))
-
-	// Write log
-	buf.WriteString(fmt.Sprintf("%v Level: %s\n", emoji.RightArrow, entry.Level))
-	buf.WriteString(fmt.Sprintf("%v Time: %s\n", emoji.RightArrow, entry.Time.String()))
-	if entry.Message != "" {
-		buf.WriteString(fmt.Sprintf("%v Message: %s\n", emoji.RightArrow, entry.Message))
-	}
-
-	// Print out the Entries error.
-	e := entry.Error()
-	if e != nil {
-		buf.WriteString(fmt.Sprintf("%v Code: %s\n", emoji.RightArrow, e.Code))
-		buf.WriteString(fmt.Sprintf("%v Message: %s\n", emoji.RightArrow, e.Message))
-		buf.WriteString(fmt.Sprintf("%v Operation: %s\n", emoji.RightArrow, e.Operation))
-		buf.WriteString(fmt.Sprintf("%v Error: %s\n", emoji.RightArrow, e.Err))
-		buf.WriteString(fmt.Sprintf("%v Fileline: %s\n\n", emoji.RightArrow, e.FileLine()))
-	}
-
-	// Print out associated data.
-	if len(entry.Data) > 0 {
-		buf.WriteString("Log entries:\n")
-		for k, v := range entry.Data {
-			if k == logrus.ErrorKey {
-				continue
-			}
-			buf.WriteString(fmt.Sprintf("%s: %v\n", k, v))
-		}
-	}
-
-	return buf.String()
 }
 
 // Levels Define on which log levels this hook would

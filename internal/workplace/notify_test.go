@@ -129,19 +129,6 @@ func TestHook_Process(t *testing.T) {
 	}
 }
 
-func TestHook_FormatMessage(t *testing.T) {
-	entry := types.Entry{
-		Message: "message",
-	}
-	got := FormatMessage(entry, types.FormatMessageArgs{
-		Service: "Service",
-		Version: "v0.1.1",
-		Prefix:  "PREFIX",
-	})
-	assert.Contains(t, got, "v0.1.1")
-	assert.Contains(t, got, "Prefix")
-}
-
 func TestHook_Levels(t *testing.T) {
 	h := Hook{LogLevels: logrus.AllLevels}
 	want := logrus.AllLevels

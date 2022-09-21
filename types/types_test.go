@@ -26,6 +26,25 @@ func TestDefaultReportFn(t *testing.T) {
 	assert.Equal(t, true, got)
 }
 
+func TestHook_FormatMessage(t *testing.T) {
+	entry := Entry{
+		Message: "message",
+		Data: Fields{
+			ErrorKey: errors.NewInternal(errors.New("error"), "message", "op"),
+			FieldKey: map[string]any{
+				"test": "hello",
+			},
+		},
+	}
+	got := DefaultFormatMessageFn(entry, FormatMessageArgs{
+		Service: "Service",
+		Version: "v0.1.1",
+		Prefix:  "PREFIX",
+	})
+	assert.Contains(t, got, "v0.1.1")
+	assert.Contains(t, got, "Prefix")
+}
+
 func TestEntry_ToLogrusEntry(t *testing.T) {
 	e := Entry{}
 	got := e.ToLogrusEntry()

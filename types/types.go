@@ -14,8 +14,12 @@
 package types
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/ainsleyclark/errors"
+	"github.com/enescakir/emoji"
 	"github.com/sirupsen/logrus"
+	"strings"
 )
 
 type (
@@ -43,6 +47,9 @@ const (
 	// FieldKey is the default key for saving fields
 	// to the logger.
 	FieldKey = "fields"
+	// ErrorKey is the default key for saving errors
+	// to the logger.
+	ErrorKey = "error"
 )
 
 var (
@@ -50,6 +57,52 @@ var (
 	// none is passed to the constructor.
 	DefaultReportFn = func(e Entry) bool {
 		return true
+	}
+	// DefaultFormatMessageFn is the default function used for sending
+	// messages. It prints a formatted message from the log entry to
+	// a user-friendly message.
+	DefaultFormatMessageFn = func(entry Entry, args FormatMessageArgs) string {
+		buf := bytes.Buffer{}
+
+		// Write version from the latest build.
+		buf.WriteString(fmt.Sprintf("%v %s", args.Service, emoji.ChartIncreasing))
+		if args.Version != "" {
+			buf.WriteString(fmt.Sprintf("v%s\n", strings.ReplaceAll(args.Version, "v", "")))
+		}
+
+		// Write intro text.
+		app := strings.Title(strings.ToLower(args.Prefix)) //nolint
+		buf.WriteString(fmt.Sprintf("\U0001FAE0 Error detected in %s, please see the information below for more details.\n\n", app))
+
+		// Write log
+		buf.WriteString(fmt.Sprintf("%v Level: %s\n", emoji.RightArrow, entry.Level))
+		buf.WriteString(fmt.Sprintf("%v Time: %s\n", emoji.RightArrow, entry.Time.String()))
+		if entry.Message != "" {
+			buf.WriteString(fmt.Sprintf("%v Message: %s\n", emoji.RightArrow, entry.Message))
+		}
+
+		// Print out the Entries error.
+		e := entry.Error()
+		if e != nil {
+			buf.WriteString(fmt.Sprintf("%v Code: %s\n", emoji.RightArrow, e.Code))
+			buf.WriteString(fmt.Sprintf("%v Message: %s\n", emoji.RightArrow, e.Message))
+			buf.WriteString(fmt.Sprintf("%v Operation: %s\n", emoji.RightArrow, e.Operation))
+			buf.WriteString(fmt.Sprintf("%v Error: %s\n", emoji.RightArrow, e.Err))
+			buf.WriteString(fmt.Sprintf("%v Fileline: %s\n\n", emoji.RightArrow, e.FileLine()))
+		}
+
+		// Print out associated data.
+		if len(entry.Data) > 0 {
+			buf.WriteString("Log entries:\n")
+			for k, v := range entry.Data {
+				if k == logrus.ErrorKey {
+					continue
+				}
+				buf.WriteString(fmt.Sprintf("%s: %v\n", k, v))
+			}
+		}
+
+		return buf.String()
 	}
 )
 
