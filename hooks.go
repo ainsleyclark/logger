@@ -73,26 +73,24 @@ func (hook *defaultHook) Fire(entry *logrus.Entry) error {
 		return nil
 	}
 	if hook.wp != nil {
-		if !hook.config.workplaceReport(types.Entry(*entry)) {
-			return nil
-		}
-		err := hook.wp(entry)
-		if err != nil {
-			return err
+		if hook.config.workplaceReport(types.Entry(*entry)) {
+			err := hook.wp(entry)
+			if err != nil {
+				L.WithError(err).Error() // Don't return, still processing to do.
+			}
 		}
 	}
 	if hook.mogrus != nil {
-		if !hook.config.mongoReport(types.Entry(*entry)) {
-			return nil
+		if hook.config.mongoReport(types.Entry(*entry)) {
+			go func(fire fireFunc) {
+				mtx.Lock()
+				err := fire(entry)
+				if err != nil {
+					L.WithError(err).Error()
+				}
+				mtx.Unlock()
+			}(hook.mogrus)
 		}
-		go func(fire fireFunc) {
-			mtx.Lock()
-			err := fire(entry)
-			if err != nil {
-				L.WithError(err).Error()
-			}
-			mtx.Unlock()
-		}(hook.mogrus)
 	}
 	return nil
 }

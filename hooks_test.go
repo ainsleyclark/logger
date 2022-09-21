@@ -17,9 +17,12 @@ import (
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/logger/types"
 	"github.com/sirupsen/logrus"
+	"io"
 )
 
 func (t *LoggerTestSuite) TestDefaultHook_Fire() {
+	L.SetOutput(io.Discard)
+
 	tt := map[string]struct {
 		input *logrus.Entry
 		hook  defaultHook
@@ -70,7 +73,7 @@ func (t *LoggerTestSuite) TestDefaultHook_Fire() {
 					workplaceReport: types.DefaultReportFn,
 				},
 			},
-			"wp error",
+			nil,
 		},
 		"Mogrus Dont Report": {
 			&logrus.Entry{},
