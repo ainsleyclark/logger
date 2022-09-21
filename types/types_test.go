@@ -129,7 +129,7 @@ func TestEntry_HasError(t *testing.T) {
 		"No Error": {
 			Entry{
 				Data: map[string]any{
-					logrus.ErrorKey: nil,
+					ErrorKey: nil,
 				},
 			},
 			false,
@@ -137,7 +137,7 @@ func TestEntry_HasError(t *testing.T) {
 		"With Error": {
 			Entry{
 				Data: map[string]any{
-					logrus.ErrorKey: errors.New("error"),
+					ErrorKey: errors.New("error"),
 				},
 			},
 			true,
@@ -166,7 +166,7 @@ func TestEntry_Error(t *testing.T) {
 		"With Error": {
 			Entry{
 				Data: map[string]any{
-					logrus.ErrorKey: errors.New("error"),
+					ErrorKey: errors.New("error"),
 				},
 			},
 			"error",

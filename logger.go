@@ -94,7 +94,7 @@ func WithFields(fields types.Fields) *logrus.Entry {
 
 // WithError - Logs with a custom error.
 func WithError(err any) *logrus.Entry {
-	return L.WithField(logrus.ErrorKey, err)
+	return L.WithField(types.ErrorKey, err)
 }
 
 // SetOutput sets the output of the L to an io.Writer,

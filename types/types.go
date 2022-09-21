@@ -95,7 +95,7 @@ var (
 		if len(entry.Data) > 0 {
 			buf.WriteString("Log entries:\n")
 			for k, v := range entry.Data {
-				if k == logrus.ErrorKey {
+				if k == ErrorKey {
 					continue
 				}
 				buf.WriteString(fmt.Sprintf("%s: %v\n", k, v))
@@ -140,7 +140,7 @@ func (e Entry) Fields() Fields {
 // HasError determines if an error is attached to
 // the entry.
 func (e Entry) HasError() bool {
-	err, ok := e.Data[logrus.ErrorKey]
+	err, ok := e.Data[ErrorKey]
 	if !ok {
 		return false
 	}
@@ -153,7 +153,7 @@ func (e Entry) HasError() bool {
 // Error returns a formatted error if one exists within the
 // entry, otherwise returns nil.
 func (e Entry) Error() *errors.Error {
-	err, ok := e.Data[logrus.ErrorKey]
+	err, ok := e.Data[ErrorKey]
 	if !ok {
 		return nil
 	}

@@ -15,6 +15,7 @@ package logger
 
 import (
 	"github.com/ainsleyclark/errors"
+	"github.com/ainsleyclark/logger/types"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
@@ -55,7 +56,7 @@ func Fire(f FireHook) {
 		"response_time":  f.ResponseTime,
 		"duration":       float64(latency.Nanoseconds()) / float64(1000),
 		"message":        f.Message,
-		logrus.ErrorKey:  err,
+		types.ErrorKey:   err,
 	}
 
 	if f.Status >= 200 && f.Status < 300 {

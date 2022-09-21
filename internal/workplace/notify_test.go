@@ -65,8 +65,8 @@ func TestHook_Process(t *testing.T) {
 	entry := types.Entry{
 		Message: "message",
 		Data: map[string]any{
-			"key":           "value",
-			logrus.ErrorKey: "value",
+			"key":          "value",
+			types.ErrorKey: "value",
 		},
 	}
 
