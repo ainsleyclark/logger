@@ -19,13 +19,16 @@ import (
 	"github.com/ainsleyclark/logger"
 	"github.com/ainsleyclark/logger/types"
 	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"os"
 	"testing"
 	"time"
 )
 
-func Test_WP(t *testing.T) {
+func Test_Mongo(t *testing.T) {
 	t.Skip()
 
 	err := godotenv.Load("../.env")
@@ -36,14 +39,14 @@ func Test_WP(t *testing.T) {
 	report := func(r types.Entry) bool {
 		return true
 	}
-	format := func(entry types.Entry, args types.FormatMessageArgs) string {
-		return "test"
-	}
+
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(os.Getenv("MONGO_CONNECTION_STRING")))
+	assert.NoError(t, err)
 
 	opts := logger.NewOptions().
 		Prefix("app").
 		Service("api").
-		WithWorkplaceNotifier(os.Getenv("WORKPLACE_TOKEN"), os.Getenv("WORKPLACE_THREAD"), report, format)
+		WithMongoCollection(client.Database("logs").Collection("test"), report)
 
 	err = logger.New(context.Background(), opts)
 	if err != nil {
