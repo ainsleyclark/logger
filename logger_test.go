@@ -20,6 +20,7 @@ import (
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/logger/internal/stdout"
 	"github.com/ainsleyclark/logger/internal/workplace"
+	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/mogrus"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -91,13 +92,13 @@ func (t *LoggerTestSuite) TestNew() {
 	for name, test := range tt {
 		t.Run(name, func() {
 			origMogrus := newMogrus
-			origHook := newHook
+			origHook := newWP
 			defer func() {
 				newMogrus = origMogrus
-				newHook = origHook
+				newWP = origHook
 			}()
 			newMogrus = test.mogrus
-			newHook = test.hook
+			newWP = test.hook
 			err := New(context.TODO(), test.input())
 			if err != nil {
 				t.Contains(err.Error(), test.want)
@@ -150,7 +151,7 @@ func (t *LoggerTestSuite) TestLogger() {
 		},
 		"With Fields": {
 			func() {
-				WithFields(Fields{"test": "with-fields"}).Error()
+				WithFields(types.Fields{"test": "with-fields"}).Error()
 			},
 			"with-fields",
 		},
@@ -203,11 +204,6 @@ func (t *LoggerTestSuite) TestSetLevel() {
 	t.Equal(logrus.WarnLevel, L.GetLevel())
 }
 
-func (t *LoggerTestSuite) TestDefaultReportFn() {
-	got := defaultReportFn(nil)
-	t.Equal(true, got)
-}
-
 func (t *LoggerTestSuite) TestSetLogger() {
 	defer func() {
 		L = logrus.New()
@@ -216,21 +212,3 @@ func (t *LoggerTestSuite) TestSetLogger() {
 	SetLogger(l)
 	t.Equal(l, L)
 }
-
-//func (t *LoggerTestSuite) TestSetService() {
-//
-//	t.Run("Success", func() {
-//		orig := config
-//		defer func() {
-//			config = orig
-//		}()
-//		SetService("service")
-//		t.Equal("service", config.service)
-//	})
-//
-//	//t.Run("Error", func() {
-//	//	buf := t.Setup()
-//	//	SetService("")
-//	//	color.Greenln(b)
-//	//})
-//}

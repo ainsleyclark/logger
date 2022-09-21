@@ -14,7 +14,9 @@
 package logger
 
 import (
+	"fmt"
 	"github.com/ainsleyclark/errors"
+	"github.com/ainsleyclark/logger/types"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -29,7 +31,7 @@ type (
 		mongoCollection *mongo.Collection
 		workplaceToken  string
 		workplaceThread string
-		report          ShouldReportFunc
+		report          types.ShouldReportFunc
 	}
 )
 
@@ -66,6 +68,10 @@ func (c *Config) assignDefaults() *Config {
 	if c.defaultStatus == "" {
 		c.defaultStatus = DefaultStatus
 	}
+	if c.report == nil {
+		c.report = types.DefaultReportFn
+	}
+	fmt.Println(c.report)
 	return c
 }
 
@@ -121,7 +127,7 @@ func (op *Options) Service(service string) *Options {
 
 // WithShouldReportFunc is called within a hook to determine if a entry
 // should be fired.
-func (op *Options) WithShouldReportFunc(fn ShouldReportFunc) *Options {
+func (op *Options) WithShouldReportFunc(fn types.ShouldReportFunc) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.report = fn
 	})

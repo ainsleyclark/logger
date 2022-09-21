@@ -16,8 +16,7 @@ package logger
 import (
 	"context"
 	"github.com/ainsleyclark/logger/internal/stdout"
-	"github.com/ainsleyclark/logger/internal/workplace"
-	"github.com/ainsleyclark/mogrus"
+	"github.com/ainsleyclark/logger/types"
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"
@@ -28,19 +27,6 @@ var (
 	L = logrus.New()
 	// Configuration is the current configuration for the logger.
 	config = &Config{} //nolint
-	// defaultReportFn is the default report function when
-	// none is passed to the constructor.
-	defaultReportFn = func(e *Entry) bool {
-		return true
-	}
-)
-
-type (
-	// Fields is an alias for logrus.Fields.
-	Fields = logrus.Fields
-	// ShouldReportFunc is the function used to determine if a
-	// logger entry should be sent to a hook.
-	ShouldReportFunc func(e *Entry) bool
 )
 
 // New creates a new standard L and sets logging levels
@@ -104,7 +90,7 @@ func WithField(key string, value any) *logrus.Entry {
 
 // WithFields logs with fields, sets a new map containing
 // "fields".
-func WithFields(fields Fields) *logrus.Entry {
+func WithFields(fields types.Fields) *logrus.Entry {
 	return L.WithFields(logrus.Fields{"fields": fields})
 }
 
@@ -128,25 +114,6 @@ func SetLevel(level logrus.Level) {
 func SetLogger(l *logrus.Logger) {
 	L = l
 }
-
-// SetService replaces the service in the configuration and
-// creates a new L.
-//func SetService(service string) {
-//	config.service = service
-//	L = logrus.New()
-//	color.Greenln(config)
-//	err := initialise(context.Background(), config)
-//	if err != nil {
-//		L.Error(err)
-//	}
-//}
-
-var (
-	// newMogrus is an alias for mogrus.New
-	newMogrus = mogrus.New
-	// newHook is an alias for notify.NewFireHook
-	newHook = workplace.NewHook
-)
 
 // initialise sets the standard log level, sets the
 // log formatter and discards the stdout.
@@ -173,7 +140,7 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 		},
 	})
 
-	// Send info and debug logs to stdout
+	// Send info and debug logs to stdout.
 	L.AddHook(&stdout.Hook{
 		Writer: os.Stdout,
 		LogLevels: []logrus.Level{
@@ -183,12 +150,8 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 		},
 	})
 
-	err := addWorkplaceHook(cfg)
-	if err != nil {
-		return err
-	}
-
-	err = addMogrusHook(ctx, cfg)
+	// Add the hooks to the logger.
+	err := addHooks(ctx, cfg)
 	if err != nil {
 		return err
 	}

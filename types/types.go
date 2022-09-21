@@ -11,15 +11,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package logger
+package types
 
 import "github.com/sirupsen/logrus"
 
 type (
+	// Fields is an alias for logrus.Fields.
+	Fields = logrus.Fields
 	// Entry is an abstraction for logrus.Entry, which provides
 	// helper functions.
 	Entry logrus.Entry
+	// ShouldReportFunc is the function used to determine if a
+	// logger entry should be sent to a hook.
+	ShouldReportFunc func(e Entry) bool
 )
+
+var (
+	// DefaultReportFn is the default report function when
+	// none is passed to the constructor.
+	DefaultReportFn = func(e Entry) bool {
+		return true
+	}
+)
+
+// ToLogrusEntry transforms an Entry to logrus.Entry
+func (e Entry) ToLogrusEntry() logrus.Entry {
+	return logrus.Entry(e)
+}
 
 // IsHTTP returns true if the fields contain HTTP
 // key and value pairs.
@@ -31,4 +49,8 @@ func (e *Entry) IsHTTP() bool {
 		return true
 	}
 	return false
+}
+
+func (e *Entry) HasError() {
+
 }

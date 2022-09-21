@@ -21,15 +21,38 @@ import (
 	"time"
 )
 
+var (
+	// newMogrus is an alias for mogrus.New
+	newMogrus = mogrus.New
+	// newWP is an alias for notify.NewFireHook
+	newWP = workplace.NewHook
+)
+
+// addHooks adds all hooks to the logger.
+func addHooks(ctx context.Context, cfg *Config) error {
+	err := addWorkplaceHook(cfg)
+	if err != nil {
+		return err
+	}
+
+	err = addMogrusHook(ctx, cfg)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // addWorkplaceHook adds the Workplace hook if
 // the thread and token exists.
 func addWorkplaceHook(cfg *Config) error {
 	if cfg.workplaceThread != "" && cfg.workplaceToken != "" {
-		wpHook, err := newHook(workplace.Options{
-			Token:   cfg.workplaceToken,
-			Thread:  cfg.workplaceThread,
-			Service: cfg.service,
-			Version: cfg.version,
+		wpHook, err := newWP(workplace.Options{
+			Token:        cfg.workplaceToken,
+			Thread:       cfg.workplaceThread,
+			Service:      cfg.service,
+			Version:      cfg.version,
+			ShouldReport: cfg.report,
 		})
 		if err != nil {
 			return err

@@ -14,6 +14,7 @@
 package logger
 
 import (
+	"github.com/ainsleyclark/logger/types"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -67,8 +68,11 @@ func (t *LoggerTestSuite) TestConfig_AssignDefaults() {
 	want := Config{
 		prefix:        DefaultPrefix,
 		defaultStatus: DefaultStatus,
+		report:        types.DefaultReportFn,
 	}
-	t.Equal(want, *got)
+	t.Equal(want.prefix, got.prefix)
+	t.Equal(want.defaultStatus, got.defaultStatus)
+	t.NotNil(got.report)
 }
 
 func (t *LoggerTestSuite) TestOptions() {
@@ -77,7 +81,7 @@ func (t *LoggerTestSuite) TestOptions() {
 		Version("v0.0.1").
 		DefaultStatus("status").
 		Prefix("prefix").
-		WithShouldReportFunc(defaultReportFn).
+		WithShouldReportFunc(types.DefaultReportFn).
 		WithMongoCollection(&mongo.Collection{}).
 		WithWorkplaceNotifier("token", "thread")
 

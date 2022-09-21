@@ -17,6 +17,7 @@ import (
 	"context"
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/logger"
+	"github.com/ainsleyclark/logger/types"
 	"net/http"
 	"time"
 )
@@ -43,7 +44,7 @@ func QuickStart() error {
 // that will appear under data. The simplest way to use the
 // logger is simply the package-level exported logger.
 func Fields() {
-	logger.WithFields(logger.Fields{
+	logger.WithFields(types.Fields{
 		"animal": "walrus",
 	}).Info("A walrus appears")
 }

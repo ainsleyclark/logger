@@ -11,33 +11,51 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package logger
+package types
 
-import "net/http"
+import (
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+	"net/http"
+	"testing"
+)
 
-func (t *LoggerTestSuite) TestEntry_IsHTTP() {
+func TestDefaultReportFn(t *testing.T) {
+	got := DefaultReportFn(Entry{})
+	assert.Equal(t, true, got)
+}
+
+func TestEntry_ToLogrusEntry(t *testing.T) {
+	e := Entry{}
+	got := e.ToLogrusEntry()
+	assert.IsType(t, logrus.Entry{}, got)
+}
+
+func TestEntry_IsHTTP(t *testing.T) {
 	tt := map[string]struct {
-		input Fields
+		input Entry
 		want  bool
 	}{
 		"True": {
-			Fields{
-				"status_code": http.StatusOK,
-				"client_ip":   "127.0.0.1",
-				"request_url": "https://github.com/ainsleyclark/logger",
+			Entry{
+				Data: map[string]any{
+					"status_code": http.StatusOK,
+					"client_ip":   "127.0.0.1",
+					"request_url": "https://github.com/ainsleyclark/logger",
+				},
 			},
 			true,
 		},
 		"False": {
-			Fields{},
+			Entry{},
 			false,
 		},
 	}
 
 	for name, test := range tt {
-		t.Run(name, func() {
-			e := Entry{Data: test.input}
-			t.Equal(test.want, e.IsHTTP())
+		t.Run(name, func(t *testing.T) {
+			got := test.input.IsHTTP()
+			assert.Equal(t, test.want, got)
 		})
 	}
 }
