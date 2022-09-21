@@ -31,12 +31,17 @@ func Test(t *testing.T) {
 		log.Fatal("Error loading .env file")
 	}
 
+	report := func(r types.Entry) bool {
+		return true
+	}
+	format := func(entry types.Entry, args types.FormatMessageArgs) string {
+		return "test"
+	}
+
 	opts := logger.NewOptions().
 		Prefix("app").
 		Service("api").
-		WithWorkplaceNotifier(os.Getenv("WORKPLACE_TOKEN"), os.Getenv("WORKPLACE_THREAD"), func(r types.Entry) bool {
-			return true
-		})
+		WithWorkplaceNotifier(os.Getenv("WORKPLACE_TOKEN"), os.Getenv("WORKPLACE_THREAD"), report, format)
 
 	err = logger.New(context.Background(), opts)
 	if err != nil {

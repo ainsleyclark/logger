@@ -84,7 +84,7 @@ func (t *LoggerTestSuite) TestOptions() {
 		DefaultStatus("status").
 		Prefix("prefix").
 		WithMongoCollection(&mongo.Collection{}, types.DefaultReportFn).
-		WithWorkplaceNotifier("token", "thread", types.DefaultReportFn)
+		WithWorkplaceNotifier("token", "thread", types.DefaultReportFn, nil)
 
 	c := &Config{}
 	for _, optFn := range opts.optFuncs {

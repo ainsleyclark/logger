@@ -23,15 +23,16 @@ type (
 	// Config defines the configuration needed for creating
 	// a new Logger.
 	Config struct {
-		version         string
-		prefix          string
-		defaultStatus   string
-		service         string
-		mongoCollection *mongo.Collection
-		workplaceToken  string
-		workplaceThread string
-		workplaceReport types.ShouldReportFunc
-		mongoReport     types.ShouldReportFunc
+		version            string
+		prefix             string
+		defaultStatus      string
+		service            string
+		mongoCollection    *mongo.Collection
+		workplaceToken     string
+		workplaceThread    string
+		workplaceReport    types.ShouldReportFunc
+		workplaceFormatter types.FormatMessageFunc
+		mongoReport        types.ShouldReportFunc
 	}
 )
 
@@ -129,6 +130,7 @@ func (op *Options) Service(service string) *Options {
 
 // WithMongoCollection allows for logging directly to Mongo.
 func (op *Options) WithMongoCollection(collection *mongo.Collection, fn types.ShouldReportFunc) *Options {
+	// TODO, Mongo options should be its own func constructor.
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.mongoCollection = collection
 		config.mongoReport = fn
@@ -138,11 +140,13 @@ func (op *Options) WithMongoCollection(collection *mongo.Collection, fn types.Sh
 
 // WithWorkplaceNotifier sends errors that have been marked
 // as errors.INTERNAL to a Workplace thread.
-func (op *Options) WithWorkplaceNotifier(token, thread string, fn types.ShouldReportFunc) *Options {
+func (op *Options) WithWorkplaceNotifier(token, thread string, fn types.ShouldReportFunc, formatter types.FormatMessageFunc) *Options {
+	// TODO, Workplace options should be its own func constructor.
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.workplaceToken = token
 		config.workplaceThread = thread
 		config.workplaceReport = fn
+		config.workplaceFormatter = formatter
 	})
 	return op
 }

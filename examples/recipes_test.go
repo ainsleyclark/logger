@@ -48,7 +48,7 @@ func Simple() error {
 func WithWorkplace() error {
 	opts := logger.NewOptions().
 		Service("api").
-		WithWorkplaceNotifier("token", "thread", nil)
+		WithWorkplaceNotifier("token", "thread", nil, nil)
 
 	err := logger.New(context.Background(), opts)
 	if err != nil {
@@ -103,7 +103,7 @@ func KitchenSink() error {
 		Service("service").
 		Prefix("prefix").
 		DefaultStatus("status").
-		WithWorkplaceNotifier("token", "thread", nil).
+		WithWorkplaceNotifier("token", "thread", nil, nil).
 		WithMongoCollection(client.Database("logs").Collection("col"), nil)
 
 	err = logger.New(context.Background(), opts)

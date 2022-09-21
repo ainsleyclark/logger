@@ -51,7 +51,7 @@ func (t *LoggerTestSuite) TestNew() {
 		},
 		"With Workplace": {
 			func() *Options {
-				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread", nil)
+				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread", nil, nil)
 			},
 			mogrus.New,
 			workplace.NewHook,
@@ -59,7 +59,7 @@ func (t *LoggerTestSuite) TestNew() {
 		},
 		"Workplace Error": {
 			func() *Options {
-				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread", nil)
+				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread", nil, nil)
 			},
 			mogrus.New,
 			func(opts workplace.Options) (*workplace.Hook, error) {

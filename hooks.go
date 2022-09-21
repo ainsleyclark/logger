@@ -108,11 +108,12 @@ func (hook *defaultHook) Levels() []logrus.Level {
 func (hook *defaultHook) addWorkplaceHook() error {
 	if hook.config.workplaceThread != "" && hook.config.workplaceToken != "" {
 		wpHook, err := newWP(workplace.Options{
-			Prefix:  hook.config.prefix,
-			Token:   hook.config.workplaceToken,
-			Thread:  hook.config.workplaceThread,
-			Service: hook.config.service,
-			Version: hook.config.version,
+			Prefix:        hook.config.prefix,
+			Token:         hook.config.workplaceToken,
+			Thread:        hook.config.workplaceThread,
+			Service:       hook.config.service,
+			Version:       hook.config.version,
+			FormatMessage: hook.config.workplaceFormatter,
 		})
 		if err != nil {
 			return err
