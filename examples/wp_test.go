@@ -15,7 +15,6 @@ package examples
 
 import (
 	"context"
-	"fmt"
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/logger"
 	"github.com/ainsleyclark/logger/types"
@@ -33,10 +32,10 @@ func Test(t *testing.T) {
 	}
 
 	opts := logger.NewOptions().
+		Prefix("app").
 		Service("api").
-		WithWorkplaceNotifier(os.Getenv("WORKPLACE_TOKEN"), os.Getenv("WORKPLACE_TOKEN")).
+		WithWorkplaceNotifier(os.Getenv("WORKPLACE_TOKEN"), os.Getenv("WORKPLACE_THREAD")).
 		WithShouldReportFunc(func(e types.Entry) bool {
-			fmt.Println(e)
 			return true
 		})
 
@@ -47,5 +46,5 @@ func Test(t *testing.T) {
 
 	logger.WithError(errors.NewInternal(errors.New("error"), "message", "op")).Error()
 
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 1)
 }

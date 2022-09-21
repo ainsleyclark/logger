@@ -15,7 +15,6 @@ package logger
 
 import (
 	"context"
-	"fmt"
 	"github.com/ainsleyclark/logger/internal/workplace"
 	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/mogrus"
@@ -60,7 +59,6 @@ func addHooks(ctx context.Context, cfg *Config) error {
 
 // defaultHook is the default hook for processing logger entries.
 type defaultHook struct {
-	levels []logrus.Level
 	config *Config
 	wp     fireFunc
 	mogrus fireFunc
@@ -71,7 +69,6 @@ type defaultHook struct {
 // entry to string and write it to
 // appropriate writer
 func (hook *defaultHook) Fire(entry *logrus.Entry) error {
-	fmt.Println("innn")
 	if entry == nil {
 		return nil
 	}
@@ -100,7 +97,7 @@ func (hook *defaultHook) Fire(entry *logrus.Entry) error {
 // Levels Define on which log levels this hook would
 // trigger.
 func (hook *defaultHook) Levels() []logrus.Level {
-	return hook.levels
+	return logrus.AllLevels
 }
 
 // addWorkplaceHook adds the Workplace hook if
@@ -108,6 +105,7 @@ func (hook *defaultHook) Levels() []logrus.Level {
 func (hook *defaultHook) addWorkplaceHook() error {
 	if hook.config.workplaceThread != "" && hook.config.workplaceToken != "" {
 		wpHook, err := newWP(workplace.Options{
+			Prefix:  hook.config.prefix,
 			Token:   hook.config.workplaceToken,
 			Thread:  hook.config.workplaceThread,
 			Service: hook.config.service,

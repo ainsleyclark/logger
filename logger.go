@@ -148,7 +148,7 @@ func initialise(ctx context.Context, cfg *Config) error { //nolint
 		},
 	})
 
-	// Add the hooks to the logger.
+	// Add the WP & Mogrus hooks to the logger.
 	err := addHooks(ctx, cfg)
 	if err != nil {
 		return err
