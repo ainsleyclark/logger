@@ -34,8 +34,7 @@ func Test(t *testing.T) {
 	opts := logger.NewOptions().
 		Prefix("app").
 		Service("api").
-		WithWorkplaceNotifier(os.Getenv("WORKPLACE_TOKEN"), os.Getenv("WORKPLACE_THREAD")).
-		WithShouldReportFunc(func(e types.Entry) bool {
+		WithWorkplaceNotifier(os.Getenv("WORKPLACE_TOKEN"), os.Getenv("WORKPLACE_THREAD"), func(r types.Entry) bool {
 			return true
 		})
 

@@ -66,13 +66,15 @@ func (t *LoggerTestSuite) TestConfig_AssignDefaults() {
 	c := Config{}
 	got := c.assignDefaults()
 	want := Config{
-		prefix:        DefaultPrefix,
-		defaultStatus: DefaultStatus,
-		report:        types.DefaultReportFn,
+		prefix:          DefaultPrefix,
+		defaultStatus:   DefaultStatus,
+		workplaceReport: types.DefaultReportFn,
+		mongoReport:     types.DefaultReportFn,
 	}
 	t.Equal(want.prefix, got.prefix)
 	t.Equal(want.defaultStatus, got.defaultStatus)
-	t.NotNil(got.report)
+	t.NotNil(got.workplaceReport)
+	t.NotNil(got.mongoReport)
 }
 
 func (t *LoggerTestSuite) TestOptions() {
@@ -81,9 +83,8 @@ func (t *LoggerTestSuite) TestOptions() {
 		Version("v0.0.1").
 		DefaultStatus("status").
 		Prefix("prefix").
-		WithShouldReportFunc(types.DefaultReportFn).
-		WithMongoCollection(&mongo.Collection{}).
-		WithWorkplaceNotifier("token", "thread")
+		WithMongoCollection(&mongo.Collection{}, types.DefaultReportFn).
+		WithWorkplaceNotifier("token", "thread", types.DefaultReportFn)
 
 	c := &Config{}
 	for _, optFn := range opts.optFuncs {
@@ -96,5 +97,6 @@ func (t *LoggerTestSuite) TestOptions() {
 	t.Equal("prefix", c.prefix)
 	t.Equal("token", c.workplaceToken)
 	t.Equal("thread", c.workplaceThread)
-	t.NotNil(c.report)
+	t.NotNil(c.workplaceReport)
+	t.NotNil(c.mongoReport)
 }

@@ -51,7 +51,7 @@ func (t *LoggerTestSuite) TestNew() {
 		},
 		"With Workplace": {
 			func() *Options {
-				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread")
+				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread", nil)
 			},
 			mogrus.New,
 			workplace.NewHook,
@@ -59,7 +59,7 @@ func (t *LoggerTestSuite) TestNew() {
 		},
 		"Workplace Error": {
 			func() *Options {
-				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread")
+				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread", nil)
 			},
 			mogrus.New,
 			func(opts workplace.Options) (*workplace.Hook, error) {
@@ -69,7 +69,7 @@ func (t *LoggerTestSuite) TestNew() {
 		},
 		"With Mogrus": {
 			func() *Options {
-				return NewOptions().Service("service").WithMongoCollection(&mongo.Collection{})
+				return NewOptions().Service("service").WithMongoCollection(&mongo.Collection{}, nil)
 			},
 			func(ctx context.Context, opts mogrus.Options) (logrus.Hook, error) {
 				return &stdout.Hook{}, nil
@@ -79,7 +79,7 @@ func (t *LoggerTestSuite) TestNew() {
 		},
 		"Mogrus Error": {
 			func() *Options {
-				return NewOptions().Service("service").WithMongoCollection(&mongo.Collection{})
+				return NewOptions().Service("service").WithMongoCollection(&mongo.Collection{}, nil)
 			},
 			func(ctx context.Context, opts mogrus.Options) (logrus.Hook, error) {
 				return nil, errors.New("mogrus error")

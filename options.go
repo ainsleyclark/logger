@@ -30,7 +30,8 @@ type (
 		mongoCollection *mongo.Collection
 		workplaceToken  string
 		workplaceThread string
-		report          types.ShouldReportFunc
+		workplaceReport types.ShouldReportFunc
+		mongoReport     types.ShouldReportFunc
 	}
 )
 
@@ -67,8 +68,11 @@ func (c *Config) assignDefaults() *Config {
 	if c.defaultStatus == "" {
 		c.defaultStatus = DefaultStatus
 	}
-	if c.report == nil {
-		c.report = types.DefaultReportFn
+	if c.workplaceReport == nil {
+		c.workplaceReport = types.DefaultReportFn
+	}
+	if c.mongoReport == nil {
+		c.mongoReport = types.DefaultReportFn
 	}
 	return c
 }
@@ -123,29 +127,22 @@ func (op *Options) Service(service string) *Options {
 	return op
 }
 
-// WithShouldReportFunc is called within a hook to determine if a entry
-// should be fired.
-func (op *Options) WithShouldReportFunc(fn types.ShouldReportFunc) *Options {
-	op.optFuncs = append(op.optFuncs, func(config *Config) {
-		config.report = fn
-	})
-	return op
-}
-
 // WithMongoCollection allows for logging directly to Mongo.
-func (op *Options) WithMongoCollection(collection *mongo.Collection) *Options {
+func (op *Options) WithMongoCollection(collection *mongo.Collection, fn types.ShouldReportFunc) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.mongoCollection = collection
+		config.mongoReport = fn
 	})
 	return op
 }
 
 // WithWorkplaceNotifier sends errors that have been marked
 // as errors.INTERNAL to a Workplace thread.
-func (op *Options) WithWorkplaceNotifier(token, thread string) *Options {
+func (op *Options) WithWorkplaceNotifier(token, thread string, fn types.ShouldReportFunc) *Options {
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.workplaceToken = token
 		config.workplaceThread = thread
+		config.workplaceReport = fn
 	})
 	return op
 }

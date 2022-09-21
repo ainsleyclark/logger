@@ -72,16 +72,19 @@ func (hook *defaultHook) Fire(entry *logrus.Entry) error {
 	if entry == nil {
 		return nil
 	}
-	if !hook.config.report(types.Entry(*entry)) {
-		return nil
-	}
 	if hook.wp != nil {
+		if !hook.config.workplaceReport(types.Entry(*entry)) {
+			return nil
+		}
 		err := hook.wp(entry)
 		if err != nil {
 			return err
 		}
 	}
 	if hook.mogrus != nil {
+		if !hook.config.mongoReport(types.Entry(*entry)) {
+			return nil
+		}
 		go func(fire fireFunc) {
 			mtx.Lock()
 			err := fire(entry)
