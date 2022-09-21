@@ -61,9 +61,9 @@ func WithWorkplace() error {
 	return nil
 }
 
-// WithWorkplace godoc
+// WithWorkplaceReport godoc
 // You can pass a function to `WithWorkplaceNotifier` as the second argument
-// which is a callback function to determine if the message should be
+// which is a callback function to determine if the log entry should be
 // sent to a thread, an example is below.
 func WithWorkplaceReport() {
 	// Don't send the message to workplace if there is no error.
@@ -87,7 +87,7 @@ func WithWorkplaceReport() {
 // This is where you can customise the message easily and return
 // a formatted string.
 func WithWorkplaceFormatter() {
-	// Don't send the message to workplace if there is no error.
+	// Format the message with the supplied arguments.
 	workplaceFormatter := func(entry types.Entry, args types.FormatMessageArgs) string {
 		return args.Version + " " + " hello from Workplace!"
 	}
@@ -124,6 +124,31 @@ func WithMongo() error {
 	logger.Info("Hello from Logger!")
 
 	return nil
+}
+
+// WithMongoReport godoc
+// You can pass a function to `WithMongoCollection` as the second argument
+// which is a callback function to determine if the message should be
+// stored within Mongo, an example is below.
+func WithMongoReport() {
+	// Don't send the message to Mongo if there is no error.
+	mongoCallBack := func(entry types.Entry) bool {
+		if !entry.HasError() {
+			return false
+		}
+		return true
+	}
+
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(os.Getenv("MONGO_CONNECTION")))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	_ = logger.NewOptions().
+		Service("api").
+		WithMongoCollection(client.Database("logs").Collection("col"), mongoCallBack)
+
+	// etc
 }
 
 // KitchenSink godoc

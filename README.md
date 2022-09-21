@@ -155,11 +155,11 @@ func WithWorkplace() error {
 
 #### Workplace CallBack
 You can pass a function to `WithWorkplaceNotifier` as the second argument which is a callback function to determine if
-the message should be sent to a thread, an example is below:
+the log entry should be sent to a thread, an example is below:
 
 ```go
 func WithWorkplaceReport() {
-	// Don't send the message to workplace if there is no error.
+	// Don't send the message to Workplace if there is no error.
 	workplaceCallBack := func(entry types.Entry) bool {
 		if !entry.HasError() {
 			return false
@@ -181,7 +181,7 @@ message to Workplace. This is where you can customise the message easily and ret
 
 ```go
 func WithWorkplaceReport() {
-	// Don't send the message to workplace if there is no error.
+	// Format the message with the supplied arguments.
 	workplaceCallBack := func(entry types.Entry) bool {
 		if !entry.HasError() {
 			return false
@@ -225,6 +225,33 @@ func WithMongo() error {
 	logger.Info("Hello from Logger!")
 
 	return nil
+}
+```
+
+#### Mongo CallBack
+You can pass a function to `WithWorkplaceNotifier` as the second argument which is a callback function to determine if
+the log entry should be stored within Mongo, an example is below:
+
+```go
+func WithMongoReport() {
+	// Don't send the message to Mongo if there is no error.
+	mongoCallBack := func(entry types.Entry) bool {
+		if !entry.HasError() {
+			return false
+		}
+		return true
+	}
+
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(os.Getenv("MONGO_CONNECTION")))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	_ = logger.NewOptions().
+	Service("api").
+	WithMongoCollection(client.Database("logs").Collection("col"), mongoCallBack)
+
+	// etc
 }
 ```
 
