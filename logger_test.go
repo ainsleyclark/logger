@@ -1,6 +1,15 @@
-// Copyright 2020 The Reddico Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// Copyright 2022 Ainsley Clark. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package logger
 
@@ -11,6 +20,7 @@ import (
 	"github.com/ainsleyclark/errors"
 	"github.com/ainsleyclark/logger/internal/stdout"
 	"github.com/ainsleyclark/logger/internal/workplace"
+	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/mogrus"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -41,7 +51,7 @@ func (t *LoggerTestSuite) TestNew() {
 		},
 		"With Workplace": {
 			func() *Options {
-				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread")
+				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread", nil, nil)
 			},
 			mogrus.New,
 			workplace.NewHook,
@@ -49,7 +59,7 @@ func (t *LoggerTestSuite) TestNew() {
 		},
 		"Workplace Error": {
 			func() *Options {
-				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread")
+				return NewOptions().Service("service").WithWorkplaceNotifier("token", "thread", nil, nil)
 			},
 			mogrus.New,
 			func(opts workplace.Options) (*workplace.Hook, error) {
@@ -59,7 +69,7 @@ func (t *LoggerTestSuite) TestNew() {
 		},
 		"With Mogrus": {
 			func() *Options {
-				return NewOptions().Service("service").WithMongoCollection(&mongo.Collection{})
+				return NewOptions().Service("service").WithMongoCollection(&mongo.Collection{}, nil)
 			},
 			func(ctx context.Context, opts mogrus.Options) (logrus.Hook, error) {
 				return &stdout.Hook{}, nil
@@ -69,7 +79,7 @@ func (t *LoggerTestSuite) TestNew() {
 		},
 		"Mogrus Error": {
 			func() *Options {
-				return NewOptions().Service("service").WithMongoCollection(&mongo.Collection{})
+				return NewOptions().Service("service").WithMongoCollection(&mongo.Collection{}, nil)
 			},
 			func(ctx context.Context, opts mogrus.Options) (logrus.Hook, error) {
 				return nil, errors.New("mogrus error")
@@ -82,13 +92,13 @@ func (t *LoggerTestSuite) TestNew() {
 	for name, test := range tt {
 		t.Run(name, func() {
 			origMogrus := newMogrus
-			origHook := newHook
+			origHook := newWP
 			defer func() {
 				newMogrus = origMogrus
-				newHook = origHook
+				newWP = origHook
 			}()
 			newMogrus = test.mogrus
-			newHook = test.hook
+			newWP = test.hook
 			err := New(context.TODO(), test.input())
 			if err != nil {
 				t.Contains(err.Error(), test.want)
@@ -141,7 +151,7 @@ func (t *LoggerTestSuite) TestLogger() {
 		},
 		"With Fields": {
 			func() {
-				WithFields(logrus.Fields{"test": "with-fields"}).Error()
+				WithFields(types.Fields{"test": "with-fields"}).Error()
 			},
 			"with-fields",
 		},
@@ -165,9 +175,9 @@ func (t *LoggerTestSuite) TestLogger() {
 func (t *LoggerTestSuite) TestLogger_Fatal() {
 	buf := t.Setup() // nolint
 	defer func() {
-		logger = logrus.New()
+		L = logrus.New()
 	}()
-	logger.ExitFunc = func(i int) {}
+	L.ExitFunc = func(i int) {}
 	Fatal("fatal")
 	t.Contains(buf.String(), "fatal")
 }
@@ -183,40 +193,22 @@ func (t *LoggerTestSuite) TestLogger_Panic() {
 func (t *LoggerTestSuite) TestLogger_SetOutput() {
 	buf := &bytes.Buffer{}
 	SetOutput(buf)
-	t.Equal(buf, logger.Out)
+	t.Equal(buf, L.Out)
 }
 
 func (t *LoggerTestSuite) TestSetLevel() {
 	defer func() {
-		logger = logrus.New()
+		L = logrus.New()
 	}()
 	SetLevel(logrus.WarnLevel)
-	t.Equal(logrus.WarnLevel, logger.GetLevel())
+	t.Equal(logrus.WarnLevel, L.GetLevel())
 }
 
 func (t *LoggerTestSuite) TestSetLogger() {
 	defer func() {
-		logger = logrus.New()
+		L = logrus.New()
 	}()
-	l := logger
+	l := L
 	SetLogger(l)
-	t.Equal(l, logger)
+	t.Equal(l, L)
 }
-
-//func (t *LoggerTestSuite) TestSetService() {
-//
-//	t.Run("Success", func() {
-//		orig := config
-//		defer func() {
-//			config = orig
-//		}()
-//		SetService("service")
-//		t.Equal("service", config.service)
-//	})
-//
-//	//t.Run("Error", func() {
-//	//	buf := t.Setup()
-//	//	SetService("")
-//	//	color.Greenln(b)
-//	//})
-//}

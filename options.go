@@ -1,11 +1,21 @@
-// Copyright 2020 The Reddico Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// Copyright 2022 Ainsley Clark. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package logger
 
 import (
 	"github.com/ainsleyclark/errors"
+	"github.com/ainsleyclark/logger/types"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -13,13 +23,16 @@ type (
 	// Config defines the configuration needed for creating
 	// a new Logger.
 	Config struct {
-		version         string
-		prefix          string
-		defaultStatus   string
-		service         string
-		mongoCollection *mongo.Collection
-		workplaceToken  string
-		workplaceThread string
+		version            string
+		prefix             string
+		defaultStatus      string
+		service            string
+		mongoCollection    *mongo.Collection
+		workplaceToken     string
+		workplaceThread    string
+		workplaceReport    types.ShouldReportFunc
+		workplaceFormatter types.FormatMessageFunc
+		mongoReport        types.ShouldReportFunc
 	}
 )
 
@@ -55,6 +68,12 @@ func (c *Config) assignDefaults() *Config {
 	}
 	if c.defaultStatus == "" {
 		c.defaultStatus = DefaultStatus
+	}
+	if c.workplaceReport == nil {
+		c.workplaceReport = types.DefaultReportFn
+	}
+	if c.mongoReport == nil {
+		c.mongoReport = types.DefaultReportFn
 	}
 	return c
 }
@@ -110,19 +129,24 @@ func (op *Options) Service(service string) *Options {
 }
 
 // WithMongoCollection allows for logging directly to Mongo.
-func (op *Options) WithMongoCollection(collection *mongo.Collection) *Options {
+func (op *Options) WithMongoCollection(collection *mongo.Collection, fn types.ShouldReportFunc) *Options {
+	// TODO, Mongo options should be its own func constructor.
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.mongoCollection = collection
+		config.mongoReport = fn
 	})
 	return op
 }
 
 // WithWorkplaceNotifier sends errors that have been marked
 // as errors.INTERNAL to a Workplace thread.
-func (op *Options) WithWorkplaceNotifier(token, thread string) *Options {
+func (op *Options) WithWorkplaceNotifier(token, thread string, fn types.ShouldReportFunc, formatter types.FormatMessageFunc) *Options {
+	// TODO, Workplace options should be its own func constructor.
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
 		config.workplaceToken = token
 		config.workplaceThread = thread
+		config.workplaceReport = fn
+		config.workplaceFormatter = formatter
 	})
 	return op
 }

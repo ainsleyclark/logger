@@ -1,11 +1,21 @@
-// Copyright 2020 The Reddico Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// Copyright 2022 Ainsley Clark. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package logger
 
 import (
 	"github.com/ainsleyclark/errors"
+	"github.com/ainsleyclark/logger/types"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
@@ -46,13 +56,13 @@ func Fire(f FireHook) {
 		"response_time":  f.ResponseTime,
 		"duration":       float64(latency.Nanoseconds()) / float64(1000),
 		"message":        f.Message,
-		logrus.ErrorKey:  err,
+		types.ErrorKey:   err,
 	}
 
 	if f.Status >= 200 && f.Status < 300 {
-		logger.WithFields(fields).Info(f.Message)
+		L.WithFields(fields).Info(f.Message)
 		return
 	}
 
-	logger.WithFields(fields).Error(f.Message)
+	L.WithFields(fields).Error(f.Message)
 }

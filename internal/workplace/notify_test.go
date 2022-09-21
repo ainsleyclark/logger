@@ -1,6 +1,15 @@
-// Copyright 2020 The Reddico Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// Copyright 2022 Ainsley Clark. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package workplace
 
@@ -8,7 +17,7 @@ import (
 	"bytes"
 	"github.com/ainsleyclark/errors"
 	mocks "github.com/ainsleyclark/logger/gen/mocks/test"
-	"github.com/ainsleyclark/mogrus"
+	"github.com/ainsleyclark/logger/types"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -44,26 +53,28 @@ func TestNewHook(t *testing.T) {
 }
 
 func TestHook_Fire(t *testing.T) {
-	h := Hook{}
+	m := &mocks.Notifier{}
+	m.On("Notify", mock.Anything, mock.Anything).
+		Return(nil)
+	h := Hook{wp: m}
 	got := h.Fire(&logrus.Entry{})
 	assert.Nil(t, got)
 }
 
 func TestHook_Process(t *testing.T) {
-	entry := mogrus.Entry{
-		Level:   "info",
+	entry := types.Entry{
 		Message: "message",
 		Data: map[string]any{
-			"key":           "value",
-			logrus.ErrorKey: "value",
+			"key":          "value",
+			types.ErrorKey: "value",
 		},
-		Error: &mogrus.Error{Code: errors.INTERNAL},
 	}
 
 	tt := map[string]struct {
-		input mogrus.Entry
-		mock  func(m *mocks.Notifier)
-		want  any
+		input     types.Entry
+		mock      func(m *mocks.Notifier)
+		formatter types.FormatMessageFunc
+		want      any
 	}{
 		"Success": {
 			entry,
@@ -71,16 +82,18 @@ func TestHook_Process(t *testing.T) {
 				m.On("Notify", mock.Anything, mock.Anything).
 					Return(nil)
 			},
-			"",
-		},
-		"Nil Error": {
-			mogrus.Entry{Level: "info", Message: "message"},
 			nil,
 			"",
 		},
-		"Not Internal": {
-			mogrus.Entry{Level: "info", Message: "message", Error: &mogrus.Error{Code: errors.INVALID}},
-			nil,
+		"With Format": {
+			entry,
+			func(m *mocks.Notifier) {
+				m.On("Notify", mock.Anything, mock.Anything).
+					Return(nil)
+			},
+			func(entry types.Entry, args types.FormatMessageArgs) string {
+				return "hello"
+			},
 			"",
 		},
 		"Error": {
@@ -89,6 +102,7 @@ func TestHook_Process(t *testing.T) {
 				m.On("Notify", mock.Anything, mock.Anything).
 					Return(errors.New("error"))
 			},
+			nil,
 			"error",
 		},
 	}
@@ -106,29 +120,13 @@ func TestHook_Process(t *testing.T) {
 			}
 			h := Hook{
 				wp:        m,
-				options:   Options{},
+				options:   Options{FormatMessage: test.formatter},
 				LogLevels: logrus.AllLevels,
 			}
-
 			h.process(test.input)
-
 			assert.Contains(t, buf.String(), test.want)
 		})
 	}
-}
-
-func TestHook_FormatMessage(t *testing.T) {
-	h := Hook{
-		options: Options{Prefix: "PREFIX", Version: "v0.1.1"},
-	}
-	entry := mogrus.Entry{
-		Level:   "info",
-		Message: "message",
-		Error:   &mogrus.Error{Code: errors.INTERNAL},
-	}
-	got := h.formatMessage(entry)
-	assert.Contains(t, got, "v0.1.1")
-	assert.Contains(t, got, "Prefix")
 }
 
 func TestHook_Levels(t *testing.T) {
