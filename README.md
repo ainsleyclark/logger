@@ -287,3 +287,16 @@ func KitchenSink() error {
 	return nil
 }
 ```
+
+## Contributing
+
+Please feel free to make a pull request if you think something should be added to this package!
+
+## Credits
+
+Shout out to the incredible [Maria Letta](https://github.com/MariaLetta) for her excellent Gopher illustrations.
+
+## Licence
+
+Code Copyright 2022 Errors. Code released under the [MIT Licence](LICENSE).
+
