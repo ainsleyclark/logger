@@ -144,7 +144,8 @@ func (e Entry) HasError() bool {
 	if !ok {
 		return false
 	}
-	if err == nil {
+	newErr := errors.ToError(err)
+	if newErr == nil || newErr.Err == nil {
 		return false
 	}
 	return true
