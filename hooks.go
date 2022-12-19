@@ -15,7 +15,7 @@ package logger
 
 import (
 	"context"
-	"github.com/ainsleyclark/logger/internal/workplace"
+	"github.com/ainsleyclark/logger/internal/hooks/workplace"
 	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/mogrus"
 	"github.com/sirupsen/logrus"
@@ -106,12 +106,14 @@ func (hook *defaultHook) Levels() []logrus.Level {
 func (hook *defaultHook) addWorkplaceHook() error {
 	if hook.config.workplaceThread != "" && hook.config.workplaceToken != "" {
 		wpHook, err := newWP(workplace.Options{
-			Prefix:        hook.config.prefix,
 			Token:         hook.config.workplaceToken,
 			Thread:        hook.config.workplaceThread,
-			Service:       hook.config.service,
-			Version:       hook.config.version,
 			FormatMessage: hook.config.workplaceFormatter,
+			Args: types.FormatMessageArgs{
+				Service: hook.config.service,
+				Version: hook.config.version,
+				Prefix:  hook.config.prefix,
+			},
 		})
 		if err != nil {
 			return err
