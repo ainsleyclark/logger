@@ -15,6 +15,7 @@ package logger
 
 import (
 	"context"
+	"github.com/ainsleyclark/logger/internal/hooks/slack"
 	"github.com/ainsleyclark/logger/internal/hooks/workplace"
 	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/mogrus"
@@ -52,6 +53,8 @@ func addHooks(ctx context.Context, cfg *Config) error {
 		return err
 	}
 
+	d.addSlackHook()
+
 	L.AddHook(d)
 
 	return nil
@@ -62,6 +65,7 @@ type defaultHook struct {
 	config *Config
 	wp     fireFunc
 	mogrus fireFunc
+	slack  fireFunc
 }
 
 // Fire will be called when some logging function is
@@ -73,15 +77,23 @@ func (hook *defaultHook) Fire(entry *logrus.Entry) error {
 		return nil
 	}
 	if hook.wp != nil {
-		if hook.config.workplaceReport(types.Entry(*entry)) {
+		if hook.config.workplace.Report(types.Entry(*entry)) {
 			err := hook.wp(entry)
 			if err != nil {
 				L.WithError(err).Error() // Don't return, still have processing to do.
 			}
 		}
 	}
+	if hook.slack != nil {
+		if hook.config.slack.Report(types.Entry(*entry)) {
+			err := hook.slack(entry)
+			if err != nil {
+				L.WithError(err).Error() // Don't return, still have processing to do.
+			}
+		}
+	}
 	if hook.mogrus != nil {
-		if hook.config.mongoReport(types.Entry(*entry)) {
+		if hook.config.mongo.Report(types.Entry(*entry)) {
 			go func(fire fireFunc) {
 				mtx.Lock()
 				err := fire(entry)
@@ -104,11 +116,11 @@ func (hook *defaultHook) Levels() []logrus.Level {
 // addWorkplaceHook adds the Workplace hook if
 // the thread and token exists.
 func (hook *defaultHook) addWorkplaceHook() error {
-	if hook.config.workplaceThread != "" && hook.config.workplaceToken != "" {
+	if hook.config.workplace.Thread != "" && hook.config.workplace.Token != "" {
 		wpHook, err := newWP(workplace.Options{
-			Token:         hook.config.workplaceToken,
-			Thread:        hook.config.workplaceThread,
-			FormatMessage: hook.config.workplaceFormatter,
+			Token:         hook.config.workplace.Token,
+			Thread:        hook.config.workplace.Thread,
+			FormatMessage: hook.config.workplace.Formatter,
 			Args: types.FormatMessageArgs{
 				Service: hook.config.service,
 				Version: hook.config.version,
@@ -126,9 +138,9 @@ func (hook *defaultHook) addWorkplaceHook() error {
 // addMogrusHook adds the Mogrus hook if
 // the client exists.
 func (hook *defaultHook) addMogrusHook(ctx context.Context) error {
-	if hook.config.mongoCollection != nil {
+	if hook.config.mongo.Collection != nil {
 		mogrusHook, err := newMogrus(ctx, mogrus.Options{
-			Collection: hook.config.mongoCollection,
+			Collection: hook.config.mongo.Collection,
 			ExpirationLevels: mogrus.ExpirationLevels{
 				logrus.TraceLevel: time.Hour * 24,
 				logrus.DebugLevel: time.Hour * 24,
@@ -145,4 +157,19 @@ func (hook *defaultHook) addMogrusHook(ctx context.Context) error {
 		hook.mogrus = mogrusHook.Fire
 	}
 	return nil
+}
+
+func (hook *defaultHook) addSlackHook() {
+	if hook.config.slack.Token != "" && hook.config.slack.Channel != "" {
+		hook.slack = slack.NewHook(slack.Options{
+			Token:         hook.config.slack.Token,
+			Channel:       hook.config.slack.Channel,
+			FormatMessage: hook.config.slack.Formatter,
+			Args: types.FormatMessageArgs{
+				Service: hook.config.service,
+				Version: hook.config.version,
+				Prefix:  hook.config.prefix,
+			},
+		}).Fire
+	}
 }

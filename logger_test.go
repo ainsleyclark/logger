@@ -87,6 +87,14 @@ func (t *LoggerTestSuite) TestNew() {
 			workplace.NewHook,
 			"mogrus error",
 		},
+		"With Slack": {
+			func() *Options {
+				return NewOptions().Service("service").WithSlackNotifier("token", "channel", nil, nil)
+			},
+			mogrus.New,
+			workplace.NewHook,
+			"mogrus error",
+		},
 	}
 
 	for name, test := range tt {

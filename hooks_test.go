@@ -36,15 +36,13 @@ func (t *LoggerTestSuite) TestDefaultHook_Fire() {
 		"OK": {
 			&logrus.Entry{},
 			defaultHook{
-				wp: func(entry *logrus.Entry) error {
-					return nil
-				},
-				mogrus: func(entry *logrus.Entry) error {
-					return nil
-				},
+				wp:     func(entry *logrus.Entry) error { return nil },
+				mogrus: func(entry *logrus.Entry) error { return nil },
+				slack:  func(entry *logrus.Entry) error { return nil },
 				config: &Config{
-					workplaceReport: types.DefaultReportFn,
-					mongoReport:     types.DefaultReportFn,
+					workplace: workplaceConfig{Report: types.DefaultReportFn},
+					mongo:     mongoConfig{Report: types.DefaultReportFn},
+					slack:     slackConfig{Report: types.DefaultReportFn},
 				},
 			},
 			nil,
@@ -56,9 +54,9 @@ func (t *LoggerTestSuite) TestDefaultHook_Fire() {
 					return nil
 				},
 				config: &Config{
-					workplaceReport: func(e types.Entry) bool {
+					workplace: workplaceConfig{Report: func(e types.Entry) bool {
 						return false
-					},
+					}},
 				},
 			},
 			nil,
@@ -70,7 +68,33 @@ func (t *LoggerTestSuite) TestDefaultHook_Fire() {
 					return errors.New("wp error")
 				},
 				config: &Config{
-					workplaceReport: types.DefaultReportFn,
+					workplace: workplaceConfig{Report: types.DefaultReportFn},
+				},
+			},
+			nil,
+		},
+		"Slack Dont Report": {
+			&logrus.Entry{},
+			defaultHook{
+				slack: func(entry *logrus.Entry) error {
+					return nil
+				},
+				config: &Config{
+					slack: slackConfig{Report: func(e types.Entry) bool {
+						return false
+					}},
+				},
+			},
+			nil,
+		},
+		"With Slack Error": {
+			&logrus.Entry{},
+			defaultHook{
+				slack: func(entry *logrus.Entry) error {
+					return errors.New("wp error")
+				},
+				config: &Config{
+					slack: slackConfig{Report: types.DefaultReportFn},
 				},
 			},
 			nil,
@@ -82,9 +106,9 @@ func (t *LoggerTestSuite) TestDefaultHook_Fire() {
 					return nil
 				},
 				config: &Config{
-					mongoReport: func(e types.Entry) bool {
+					mongo: mongoConfig{Report: func(e types.Entry) bool {
 						return false
-					},
+					}},
 				},
 			},
 			nil,
@@ -96,7 +120,7 @@ func (t *LoggerTestSuite) TestDefaultHook_Fire() {
 					return errors.New("mogrus error")
 				},
 				config: &Config{
-					mongoReport: types.DefaultReportFn,
+					mongo: mongoConfig{Report: types.DefaultReportFn},
 				},
 			},
 			nil,
