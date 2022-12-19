@@ -35,7 +35,7 @@ type (
 	// Hook represents the Slack hook notifier
 	// for log entries.
 	Hook struct {
-		sendFunc  func(channelID string, options ...slack.MsgOption) (string, string, error)
+		sendFunc  sendSlackFunc
 		options   Options
 		LogLevels []logrus.Level
 	}
@@ -48,7 +48,7 @@ type (
 		FormatMessage types.FormatMessageFunc
 	}
 	// sendSlackFunc is the function used for sending to
-	// a slack channell.
+	// a slack channel.
 	sendSlackFunc func(channelID string, options ...slack.MsgOption) (string, string, error)
 )
 
