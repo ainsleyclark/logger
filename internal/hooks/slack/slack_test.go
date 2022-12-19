@@ -11,52 +11,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package workplace
+package slack
 
 import (
 	"bytes"
-	"github.com/ainsleyclark/errors"
-	mocks "github.com/ainsleyclark/logger/gen/mocks/test"
+	"errors"
 	"github.com/ainsleyclark/logger/types"
 	"github.com/sirupsen/logrus"
+	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"log"
 	"os"
 	"testing"
 )
 
 func TestNewHook(t *testing.T) {
-	tt := map[string]struct {
-		input string
-		want  any
-	}{
-		"Success": {
-			"token",
-			nil,
-		},
-		"Error": {
-			"",
-			"token cannot be nil",
-		},
-	}
-
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			_, err := NewHook(Options{Token: test.input})
-			if err != nil {
-				assert.Contains(t, err.Error(), test.want)
-				return
-			}
-		})
-	}
+	got := NewHook(Options{})
+	assert.NotNil(t, got.sendFunc)
+	assert.NotNil(t, got.options)
+	assert.Equal(t, logrus.AllLevels, got.LogLevels)
 }
 
 func TestHook_Fire(t *testing.T) {
-	m := &mocks.Notifier{}
-	m.On("Notify", mock.Anything, mock.Anything).
-		Return(nil)
-	h := Hook{wp: m}
+	h := Hook{sendFunc: func(channelID string, options ...slack.MsgOption) (string, string, error) {
+		return "", "", nil
+	}}
 	got := h.Fire(&logrus.Entry{})
 	assert.Nil(t, got)
 }
@@ -71,38 +50,19 @@ func TestHook_Process(t *testing.T) {
 	}
 
 	tt := map[string]struct {
-		input     types.Entry
-		mock      func(m *mocks.Notifier)
-		formatter types.FormatMessageFunc
-		want      any
+		mock sendSlackFunc
+		want any
 	}{
 		"Success": {
-			entry,
-			func(m *mocks.Notifier) {
-				m.On("Notify", mock.Anything, mock.Anything).
-					Return(nil)
-			},
-			nil,
-			"",
-		},
-		"With Format": {
-			entry,
-			func(m *mocks.Notifier) {
-				m.On("Notify", mock.Anything, mock.Anything).
-					Return(nil)
-			},
-			func(entry types.Entry, args types.FormatMessageArgs) string {
-				return "hello"
+			func(channelID string, options ...slack.MsgOption) (string, string, error) {
+				return "", "", nil
 			},
 			"",
 		},
 		"Error": {
-			entry,
-			func(m *mocks.Notifier) {
-				m.On("Notify", mock.Anything, mock.Anything).
-					Return(errors.New("error"))
+			func(channelID string, options ...slack.MsgOption) (string, string, error) {
+				return "", "", errors.New("error")
 			},
-			nil,
 			"error",
 		},
 	}
@@ -114,16 +74,11 @@ func TestHook_Process(t *testing.T) {
 			defer func() {
 				log.SetOutput(os.Stderr)
 			}()
-			m := &mocks.Notifier{}
-			if test.mock != nil {
-				test.mock(m)
-			}
 			h := Hook{
-				wp:        m,
-				options:   Options{FormatMessage: test.formatter},
+				sendFunc:  test.mock,
 				LogLevels: logrus.AllLevels,
 			}
-			h.process(test.input)
+			h.process(entry)
 			assert.Contains(t, buf.String(), test.want)
 		})
 	}

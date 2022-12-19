@@ -14,6 +14,7 @@
 package workplace
 
 import (
+	"github.com/ainsleyclark/logger/internal/hooks"
 	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/workplace"
 	"github.com/sirupsen/logrus"
@@ -47,9 +48,7 @@ type (
 	Options struct {
 		Token         string
 		Thread        string
-		Service       string
-		Version       string
-		Prefix        string
+		Args          types.FormatMessageArgs
 		FormatMessage types.FormatMessageFunc
 	}
 )
@@ -64,28 +63,10 @@ func (hook *Hook) Fire(entry *logrus.Entry) error {
 }
 
 func (hook *Hook) process(entry types.Entry) {
-	// Setup args for formatting the message.
-	var (
-		message = "" //nolint
-		args    = types.FormatMessageArgs{
-			Service: hook.options.Service,
-			Version: hook.options.Version,
-			Prefix:  hook.options.Prefix,
-		}
-	)
-
-	// Use the default format message if none is attached,
-	// otherwise call the function that is assigned.
-	if hook.options.FormatMessage == nil {
-		message = types.DefaultFormatMessageFn(entry, args)
-	} else {
-		message = hook.options.FormatMessage(entry, args)
-	}
-
 	// Use the Workplace client to send a message via the bot.
 	err := hook.wp.Notify(workplace.Transmission{
 		Thread:  hook.options.Thread,
-		Message: message,
+		Message: hooks.GetMessage(entry, hook.options.Args, hook.options.FormatMessage),
 	})
 	if err != nil {
 		log.Println(err.Error()) // We can't use the standard logger as it may cause a loop.

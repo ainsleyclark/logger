@@ -15,7 +15,7 @@ package logger
 
 import (
 	"context"
-	"github.com/ainsleyclark/logger/internal/stdout"
+	"github.com/ainsleyclark/logger/internal/hooks/stdout"
 	"github.com/ainsleyclark/logger/types"
 	"github.com/sirupsen/logrus"
 	"io"

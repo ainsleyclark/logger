@@ -23,16 +23,32 @@ type (
 	// Config defines the configuration needed for creating
 	// a new Logger.
 	Config struct {
-		version            string
-		prefix             string
-		defaultStatus      string
-		service            string
-		mongoCollection    *mongo.Collection
-		workplaceToken     string
-		workplaceThread    string
-		workplaceReport    types.ShouldReportFunc
-		workplaceFormatter types.FormatMessageFunc
-		mongoReport        types.ShouldReportFunc
+		version       string
+		prefix        string
+		defaultStatus string
+		service       string
+		mongo         mongoConfig
+		workplace     workplaceConfig
+		slack         slackConfig
+	}
+	// mongoConfig is the configuration used to send to Mongo.
+	mongoConfig struct {
+		Collection *mongo.Collection
+		Report     types.ShouldReportFunc
+	}
+	// workplaceConfig is the configuration used to send to Workplace.
+	workplaceConfig struct {
+		Token     string
+		Thread    string
+		Report    types.ShouldReportFunc
+		Formatter types.FormatMessageFunc
+	}
+	// slackConfig is the configuration used to send to Slack.
+	slackConfig struct {
+		Token     string
+		Channel   string
+		Report    types.ShouldReportFunc
+		Formatter types.FormatMessageFunc
 	}
 )
 
@@ -51,10 +67,10 @@ func (c *Config) Validate() error {
 	if c.service == "" {
 		return errors.New("service name cannot be empty")
 	}
-	if c.workplaceToken != "" && c.workplaceThread == "" {
+	if c.workplace.Token != "" && c.workplace.Thread == "" {
 		return errors.New("workplace thread cannot be nil")
 	}
-	if c.workplaceToken == "" && c.workplaceThread != "" {
+	if c.workplace.Token == "" && c.workplace.Thread != "" {
 		return errors.New("workplace token cannot be nil")
 	}
 	return nil
@@ -69,11 +85,14 @@ func (c *Config) assignDefaults() *Config {
 	if c.defaultStatus == "" {
 		c.defaultStatus = DefaultStatus
 	}
-	if c.workplaceReport == nil {
-		c.workplaceReport = types.DefaultReportFn
+	if c.workplace.Report == nil {
+		c.workplace.Report = types.DefaultReportFn
 	}
-	if c.mongoReport == nil {
-		c.mongoReport = types.DefaultReportFn
+	if c.mongo.Report == nil {
+		c.mongo.Report = types.DefaultReportFn
+	}
+	if c.slack.Report == nil {
+		c.slack.Report = types.DefaultReportFn
 	}
 	return c
 }
@@ -132,8 +151,10 @@ func (op *Options) Service(service string) *Options {
 func (op *Options) WithMongoCollection(collection *mongo.Collection, fn types.ShouldReportFunc) *Options {
 	// TODO, Mongo options should be its own func constructor.
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
-		config.mongoCollection = collection
-		config.mongoReport = fn
+		config.mongo = mongoConfig{
+			Collection: collection,
+			Report:     fn,
+		}
 	})
 	return op
 }
@@ -143,10 +164,27 @@ func (op *Options) WithMongoCollection(collection *mongo.Collection, fn types.Sh
 func (op *Options) WithWorkplaceNotifier(token, thread string, fn types.ShouldReportFunc, formatter types.FormatMessageFunc) *Options {
 	// TODO, Workplace options should be its own func constructor.
 	op.optFuncs = append(op.optFuncs, func(config *Config) {
-		config.workplaceToken = token
-		config.workplaceThread = thread
-		config.workplaceReport = fn
-		config.workplaceFormatter = formatter
+		config.workplace = workplaceConfig{
+			Token:     token,
+			Thread:    thread,
+			Report:    fn,
+			Formatter: formatter,
+		}
+	})
+	return op
+}
+
+// WithSlackNotifier sends errors that have been marked
+// as errors.INTERNAL to a Workplace thread.
+func (op *Options) WithSlackNotifier(token, channel string, fn types.ShouldReportFunc, formatter types.FormatMessageFunc) *Options {
+	// TODO, Slack options should be its own func constructor.
+	op.optFuncs = append(op.optFuncs, func(config *Config) {
+		config.slack = slackConfig{
+			Token:     token,
+			Channel:   channel,
+			Report:    fn,
+			Formatter: formatter,
+		}
 	})
 	return op
 }

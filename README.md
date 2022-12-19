@@ -197,6 +197,31 @@ func WithWorkplaceReport() {
 }
 ```
 
+## WithSlack
+
+Create a logger with Facebook Slack integration. A token and a channel are required to send any error code that has
+been marked as `errors.INTERNAL` to thread ID passed.
+
+**Note**
+All formatting and callbacks are available with Slack. See above for more details.
+
+```go
+func WithSlack() error {
+	opts := logger.NewOptions().
+		Service("api").
+		WithSlackNotifier("token", "#channel", nil, nil)
+
+	err := logger.New(context.Background(), opts)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("Hello from Logger!")
+
+	return nil
+}
+```
+
 ### WithMongo
 
 Create a logger with Mongo integration. All logs are sent to the collection passed
@@ -275,6 +300,7 @@ func KitchenSink() error {
 		Prefix("prefix").
 		DefaultStatus("status").
 		WithWorkplaceNotifier("token", "thread").
+		WithSlackNotifier("token", "#channel").
 		WithMongoCollection(client.Database("logs").Collection("col"))
 
 	err = logger.New(context.Background(), opts)

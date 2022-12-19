@@ -29,23 +29,22 @@ func (t *LoggerTestSuite) TestConfig_Validate() {
 		},
 		"Workplace Thread": {
 			Config{
-				service:        "service",
-				workplaceToken: "token",
+				service:   "service",
+				workplace: workplaceConfig{Token: "token"},
 			},
 			"workplace thread cannot be nil",
 		},
 		"Workplace Token": {
 			Config{
-				service:         "service",
-				workplaceThread: "thread",
+				service:   "service",
+				workplace: workplaceConfig{Thread: "thread"},
 			},
 			"workplace token cannot be nil",
 		},
 		"Success": {
 			Config{
-				service:         "service",
-				workplaceToken:  "token",
-				workplaceThread: "thread",
+				service:   "service",
+				workplace: workplaceConfig{Token: "token", Thread: "thread"},
 			},
 			nil,
 		},
@@ -66,15 +65,17 @@ func (t *LoggerTestSuite) TestConfig_AssignDefaults() {
 	c := Config{}
 	got := c.assignDefaults()
 	want := Config{
-		prefix:          DefaultPrefix,
-		defaultStatus:   DefaultStatus,
-		workplaceReport: types.DefaultReportFn,
-		mongoReport:     types.DefaultReportFn,
+		prefix:        DefaultPrefix,
+		defaultStatus: DefaultStatus,
+		workplace:     workplaceConfig{Report: types.DefaultReportFn},
+		mongo:         mongoConfig{Report: types.DefaultReportFn},
+		slack:         slackConfig{Report: types.DefaultReportFn},
 	}
 	t.Equal(want.prefix, got.prefix)
 	t.Equal(want.defaultStatus, got.defaultStatus)
-	t.NotNil(got.workplaceReport)
-	t.NotNil(got.mongoReport)
+	t.NotNil(got.workplace.Report)
+	t.NotNil(got.mongo.Report)
+	t.NotNil(got.slack.Report)
 }
 
 func (t *LoggerTestSuite) TestOptions() {
@@ -84,7 +85,8 @@ func (t *LoggerTestSuite) TestOptions() {
 		DefaultStatus("status").
 		Prefix("prefix").
 		WithMongoCollection(&mongo.Collection{}, types.DefaultReportFn).
-		WithWorkplaceNotifier("token", "thread", types.DefaultReportFn, nil)
+		WithWorkplaceNotifier("token", "thread", types.DefaultReportFn, nil).
+		WithSlackNotifier("token", "channel", types.DefaultReportFn, nil)
 
 	c := &Config{}
 	for _, optFn := range opts.optFuncs {
@@ -95,8 +97,11 @@ func (t *LoggerTestSuite) TestOptions() {
 	t.Equal("v0.0.1", c.version)
 	t.Equal("status", c.defaultStatus)
 	t.Equal("prefix", c.prefix)
-	t.Equal("token", c.workplaceToken)
-	t.Equal("thread", c.workplaceThread)
-	t.NotNil(c.workplaceReport)
-	t.NotNil(c.mongoReport)
+	t.Equal("token", c.workplace.Token)
+	t.Equal("thread", c.workplace.Thread)
+	t.Equal("token", c.slack.Token)
+	t.Equal("channel", c.slack.Channel)
+	t.NotNil(c.workplace.Report)
+	t.NotNil(c.mongo.Report)
+	t.NotNil(c.slack.Report)
 }

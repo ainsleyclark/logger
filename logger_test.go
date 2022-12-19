@@ -18,8 +18,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/ainsleyclark/errors"
-	"github.com/ainsleyclark/logger/internal/stdout"
-	"github.com/ainsleyclark/logger/internal/workplace"
+	"github.com/ainsleyclark/logger/internal/hooks/stdout"
+	"github.com/ainsleyclark/logger/internal/hooks/workplace"
 	"github.com/ainsleyclark/logger/types"
 	"github.com/ainsleyclark/mogrus"
 	"github.com/sirupsen/logrus"
@@ -84,6 +84,14 @@ func (t *LoggerTestSuite) TestNew() {
 			func(ctx context.Context, opts mogrus.Options) (logrus.Hook, error) {
 				return nil, errors.New("mogrus error")
 			},
+			workplace.NewHook,
+			"mogrus error",
+		},
+		"With Slack": {
+			func() *Options {
+				return NewOptions().Service("service").WithSlackNotifier("token", "channel", nil, nil)
+			},
+			mogrus.New,
 			workplace.NewHook,
 			"mogrus error",
 		},
