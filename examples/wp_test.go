@@ -52,5 +52,5 @@ func Test_WP(t *testing.T) {
 
 	logger.WithError(errors.NewInternal(errors.New("error"), "message", "op")).Error()
 
-	time.Sleep(time.Second * 1)
+	time.Sleep(time.Second * 3)
 }
