@@ -300,6 +300,7 @@ func KitchenSink() error {
 		Prefix("prefix").
 		DefaultStatus("status").
 		WithWorkplaceNotifier("token", "thread").
+		WithSlackNotifier("token", "#channel").
 		WithMongoCollection(client.Database("logs").Collection("col"))
 
 	err = logger.New(context.Background(), opts)
