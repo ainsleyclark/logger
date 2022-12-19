@@ -26,7 +26,7 @@ import (
 )
 
 func Test_Slack(t *testing.T) {
-	//t.Skip()
+	t.Skip()
 
 	err := godotenv.Load("../.env")
 	if err != nil {
