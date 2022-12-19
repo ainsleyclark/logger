@@ -26,7 +26,7 @@ import (
 )
 
 func Test_Slack(t *testing.T) {
-	t.Skip()
+	//t.Skip()
 
 	err := godotenv.Load("../.env")
 	if err != nil {
@@ -43,7 +43,7 @@ func Test_Slack(t *testing.T) {
 	opts := logger.NewOptions().
 		Prefix("app").
 		Service("api").
-		WithWorkplaceNotifier(os.Getenv("WORKPLACE_TOKEN"), os.Getenv("WORKPLACE_THREAD"), report, format)
+		WithSlackNotifier(os.Getenv("SLACK_TOKEN"), os.Getenv("SLACK_CHANNEL"), report, format)
 
 	err = logger.New(context.Background(), opts)
 	if err != nil {
@@ -52,5 +52,5 @@ func Test_Slack(t *testing.T) {
 
 	logger.WithError(errors.NewInternal(errors.New("error"), "message", "op")).Error()
 
-	time.Sleep(time.Second * 1)
+	time.Sleep(time.Second * 4)
 }
