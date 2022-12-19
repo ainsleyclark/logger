@@ -48,7 +48,7 @@ type (
 		FormatMessage types.FormatMessageFunc
 	}
 	// sendSlackFunc is the function used for sending to
-	// a slack channel.
+	// a Slack channel.
 	sendSlackFunc func(channelID string, options ...slack.MsgOption) (string, string, error)
 )
 
