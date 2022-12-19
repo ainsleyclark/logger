@@ -202,6 +202,9 @@ func WithWorkplaceReport() {
 Create a logger with Facebook Slack integration. A token and a channel are required to send any error code that has
 been marked as `errors.INTERNAL` to thread ID passed.
 
+**Note**
+All formatting and callbacks are available with Slack. See above for more details.
+
 ```go
 func WithSlack() error {
 	opts := logger.NewOptions().
